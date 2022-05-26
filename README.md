@@ -9,6 +9,7 @@ Deploy a fully functional on-premise cloud infrastructure that encompasses all d
 - Purpose: full organizational & social identity solution
 - Sub-charts:
   - [Keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)
+  - [OAuth2 Proxy](https://artifacthub.io/packages/helm/oauth2-proxy/oauth2-proxy)
   - [Keycloak Config CLI](https://artifacthub.io/packages/helm/jkroepke/keycloak-config-cli)
   - [OpenLDAP Stack](https://artifacthub.io/packages/helm/helm-openldap/openldap-stack-ha)
 - Config

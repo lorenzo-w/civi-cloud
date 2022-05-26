@@ -1,3 +1,4 @@
+secretSeed: "" # Please supply a generated secret unique to this cluster (and save it externally for backup)
 admin:
   idp:
     # See https://dexidp.io/docs/connectors/
@@ -9,10 +10,13 @@ admin:
   email: "" # Admin email address (for email notifications)
 
 domain: "" # The public root domain of this cluster (e.g. "example.org")
+organizationName: "" # The full name of your organization
 
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)
-  keycloak: "idp"
+  keycloak: "id"
+  oauth2_proxy: "auth"
+  phpldapadmin: "ldap"
   homer: "home"
   dolibarr: "orga"
   nextcloud: "cloud"

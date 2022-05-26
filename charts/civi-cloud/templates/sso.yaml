@@ -1,0 +1,216 @@
+{{- define "hosts.oidc" -}}
+{{ printf "%s.%s" .Values.subdomains.keycloak .Values.domain }}
+{{- end -}}
+{{- define "urls.oidc_issuer" -}}
+{{ printf "https://%s" (include "hosts.oidc" .) }}
+{{- end -}}
+{{- define "urls.oidc_callback" -}}
+{{ printf "https://%s/callback" (include "hosts.oidc" .) }} # TODO: check if path is correct
+{{- end -}}
+
+{{- define "hosts.authproxy" -}}
+{{ printf "%s.%s" .Values.subdomains.oauth2_proxy .Values.domain }}
+{{- end -}}
+{{- define "urls.authproxy_login" -}}
+{{ printf "https://%s/oauth2/start" (include "hosts.authproxy" .) }}
+{{- end -}}
+{{- define "urls.authproxy_check" -}}
+{{ "http://oauth2-proxy.sso.svc.cluster.local/oauth2/auth" }}
+{{- end -}}
+{{- define "urls.authproxy_callback" -}}
+{{ printf "https://%s/oauth2/callback" (include "hosts.authproxy" .) }}
+{{- end -}}
+
+{{- define "hosts.phpldapadmin" -}}
+{{ printf "%s.%s" .Values.subdomains.phpldapadmin .Values.domain }}
+{{- end -}}
+
+{{- define "urls.oidc_redirects" -}}
+- {{ include "urls.authproxy_callback" . }}
+{{- end -}}
+
+{{- define "names.oidc_client" -}}
+{{ "local" }}
+{{- end -}}
+{{- define "secrets.oidc_client" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "local-oidc-client" .Values.domain | b64enc }}
+{{- end -}}
+
+{{- define "secrets.ldap_admin_pw" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "openldap-admin" .Values.domain | b64enc }}
+{{- end -}}
+{{- define "secrets.ldap_config_pw" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "openldap-config" .Values.domain | b64enc }}
+{{- end -}}
+
+{{- define "names.keycloak_admin_user" -}}
+{{ "admin" }}
+{{- end -}}
+{{- define "secrets.keycloak_admin_pw" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "keycloak-admin" .Values.domain | b64enc }}
+{{- end -}}
+{{- define "names.keycloak_management_user" -}}
+{{ "admin" }}
+{{- end -}}
+{{- define "secrets.keycloak_management_pw" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "keycloak-management" .Values.domain | b64enc }}
+{{- end -}}
+
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: sso
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: openldap-stack
+  namespace: sso
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: openldap-stack-ha
+      version: '3.0.0'
+      sourceRef:
+        kind: HelmRepository
+        name: helm-openldap
+        namespace: flux-system
+  values:
+    replicaCount: 2
+    global:
+      ldapDomain: {{ .Values.domain }}
+      adminPassword: {{ include "secrets.ldap_admin_pw" . }}
+      configPassword: {{ include "secrets.ldap_config_pw" . }}
+    env:
+      LDAP_ORGANISATION: {{ .Values.organizationName | quote }}
+    ltb-passwd:
+      enabled: false
+    phpldapadmin:
+      env:
+        PHPLDAPADMIN_HTTPS: "false"
+      ingress:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: acme
+        hosts:
+          - {{ include "hosts.phpldapadmin" . }}
+        tls:
+          - hosts:
+              - {{ include "hosts.phpldapadmin" . }}
+            secretName: phpldapadmin-cert
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: keycloak
+  namespace: sso
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: keycloak
+      version: '9.1.1'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  dependsOn:
+    - name: openldap-stack
+      namespace: sso
+  values:
+    auth:
+      adminUser: {{ include "names.keycloak_admin_user" . }}
+      adminPassword: {{ include "secrets.keycloak_admin_pw" . }}
+      managementUser: {{ include "names.keycloak_management_user" . }}
+      managementPassword: {{ include "secrets.keycloak_management_pw" . }}
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+      hostname: {{ include "hosts.oidc" . }}
+      tls: true
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: keycloak-config
+  namespace: sso
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: keycloak-config-cli
+      version: '1.2.3'
+      sourceRef:
+        kind: HelmRepository
+        name: jkroepke
+        namespace: flux-system
+  dependsOn:
+    - name: keycloak
+      namespace: sso
+  values:
+    env: 
+      KEYCLOAK_URL: {{ include "urls.oidc_issuer" . }}
+      KEYCLOAK_USER: {{ include "names.keycloak_admin_user" . }}
+    secrets:
+      KEYCLOAK_PASSWORD: {{ include "secrets.keycloak_admin_pw" . }}
+    config:
+      {{ .Values.domain }}:
+        inline:
+          # TBD
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: oauth2-proxy
+  namespace: sso
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: oauth2-proxy
+      version: '6.2.0'
+      sourceRef:
+        kind: HelmRepository
+        name: oauth2-proxy
+        namespace: flux-system
+  dependsOn:
+    - name: keycloak-config
+      namespace: sso
+  values:
+    config:
+      clientID: {{ include "names.oidc_client" . }}
+      clientSecret: {{ include "secrets.oidc_client" . }}
+      cookieSecret: {{ randAlphaNum 32 }}
+      configFile: |-
+        upstreams = "file:///dev/null"
+        whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        provider = "oidc"
+        provider_display_name = "Keycloak OIDC"
+        oidc_issuer_url = {{ include "urls.oidc_issuer" . | quote }}
+        redirect_url = {{ include "urls.authproxy_callback" . | quote }}
+        set_xauthrequest = true
+        set_authorization_header = true
+        pass_authorization_header = true
+        pass_access_token = true
+        cookie_samesite = "none"
+        cookie_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
+        email_domains = "*"
+        scope = "email groups profile openid"
+        {{ if .Values.test_run -}}
+        ssl_insecure_skip_verify = true
+        {{- end }}
+    # -> see https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#config-file
+    # and https://dexidp.io/docs/custom-scopes-claims-clients/#scopes
+    # and https://dexidp.io/docs/custom-scopes-claims-clients/#cross-client-trust-and-authorized-party
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+      hosts:
+        - {{ include "hosts.authproxy" . }}
+      tls:
+        - hosts:
+            - {{ include "hosts.authproxy" . }}
+          secretName: oauth2-proxy-cert
