@@ -49,6 +49,15 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
+  name: dex
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://charts.dexidp.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
   name: k8s-at-home
   namespace: flux-system
 spec:

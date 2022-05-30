@@ -1,11 +1,30 @@
-{{- define "hosts.oidc" -}}
+{{- define "hosts.idp" -}}
 {{ printf "%s.%s" .Values.subdomains.keycloak .Values.domain }}
+{{- end -}}
+{{- define "urls.idp_issuer" -}}
+{{ printf "https://%s" (include "hosts.idp" .) }}
+{{- end -}}
+{{- define "urls.idp_callback" -}}
+{{ printf "https://%s/realms/master/broker/oidc/endpoint" (include "hosts.idp" .) }}
+{{- end -}}
+
+{{- define "hosts.oidc" -}}
+{{ printf "%s.%s" .Values.subdomains.dex .Values.domain }}
 {{- end -}}
 {{- define "urls.oidc_issuer" -}}
 {{ printf "https://%s" (include "hosts.oidc" .) }}
 {{- end -}}
 {{- define "urls.oidc_callback" -}}
-{{ printf "https://%s/callback" (include "hosts.oidc" .) }} # TODO: check if path is correct
+{{ printf "https://%s/callback" (include "hosts.oidc" .) }}
+{{- end -}}
+{{- define "urls.oidc_token" -}}
+{{ printf "https://%s/token" (include "hosts.oidc" .) }}
+{{- end -}}
+{{- define "urls.oidc_auth" -}}
+{{ printf "https://%s/auth" (include "hosts.oidc" .) }}
+{{- end -}}
+{{- define "urls.oidc_jwks" -}}
+{{ printf "https://%s/keys" (include "hosts.oidc" .) }}
 {{- end -}}
 
 {{- define "hosts.authproxy" -}}
@@ -34,6 +53,13 @@
 {{- end -}}
 {{- define "secrets.oidc_client" -}}
 {{ derivePassword 1 "maximum" .Values.secretSeed "local-oidc-client" .Values.domain | b64enc }}
+{{- end -}}
+
+{{- define "names.oidc_client" -}}
+{{ "local" }}
+{{- end -}}
+{{- define "secrets.oidc_client" -}}
+{{ derivePassword 1 "maximum" .Values.secretSeed "admin-oidc-client" .Values.domain | b64enc }}
 {{- end -}}
 
 {{- define "secrets.ldap_admin_pw" -}}
@@ -128,7 +154,7 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: acme
-      hostname: {{ include "hosts.oidc" . }}
+      hostname: {{ include "hosts.idp" . }}
       tls: true
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -151,14 +177,361 @@ spec:
       namespace: sso
   values:
     env: 
-      KEYCLOAK_URL: {{ include "urls.oidc_issuer" . }}
+      KEYCLOAK_URL: {{ include "urls.idp_issuer" . }}
       KEYCLOAK_USER: {{ include "names.keycloak_admin_user" . }}
     secrets:
       KEYCLOAK_PASSWORD: {{ include "secrets.keycloak_admin_pw" . }}
     config:
-      {{ .Values.domain }}:
+      master:
         inline:
-          # TBD
+          enabled: true
+          realm: master
+          "components": {
+            "org.keycloak.storage.UserStorageProvider": [
+              {
+                "id": "ldap",
+                "name": "ldap",
+                "providerId": "ldap",
+                "subComponents": {
+                  "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
+                    {
+                      "name": "last name",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "is.mandatory.in.ldap": [
+                          "true"
+                        ],
+                        "read.only": [
+                          "false"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "true"
+                        ],
+                        "user.model.attribute": [
+                          "lastName"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "first name",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "ldap.attribute": [
+                          "cn"
+                        ],
+                        "is.mandatory.in.ldap": [
+                          "true"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "true"
+                        ],
+                        "read.only": [
+                          "false"
+                        ],
+                        "user.model.attribute": [
+                          "firstName"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "creation date",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "ldap.attribute": [
+                          "createTimestamp"
+                        ],
+                        "is.mandatory.in.ldap": [
+                          "false"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "true"
+                        ],
+                        "read.only": [
+                          "true"
+                        ],
+                        "user.model.attribute": [
+                          "createTimestamp"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "username",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "ldap.attribute": [
+                          "uid"
+                        ],
+                        "is.mandatory.in.ldap": [
+                          "true"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "false"
+                        ],
+                        "read.only": [
+                          "false"
+                        ],
+                        "user.model.attribute": [
+                          "username"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "modify date",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "ldap.attribute": [
+                          "modifyTimestamp"
+                        ],
+                        "is.mandatory.in.ldap": [
+                          "false"
+                        ],
+                        "read.only": [
+                          "true"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "true"
+                        ],
+                        "user.model.attribute": [
+                          "modifyTimestamp"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "email",
+                      "providerId": "user-attribute-ldap-mapper",
+                      "subComponents": {},
+                      "config": {
+                        "ldap.attribute": [
+                          "mail"
+                        ],
+                        "is.mandatory.in.ldap": [
+                          "false"
+                        ],
+                        "always.read.value.from.ldap": [
+                          "false"
+                        ],
+                        "read.only": [
+                          "false"
+                        ],
+                        "user.model.attribute": [
+                          "email"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "config": {
+                  "pagination": [
+                    "true"
+                  ],
+                  "fullSyncPeriod": [
+                    "-1"
+                  ],
+                  "connectionPooling": [
+                    "true"
+                  ],
+                  "usersDn": [
+                    "ou=People,dc=example,dc=org"
+                  ],
+                  "cachePolicy": [
+                    "DEFAULT"
+                  ],
+                  "useKerberosForPasswordAuthentication": [
+                    "false"
+                  ],
+                  "importEnabled": [
+                    "true"
+                  ],
+                  "enabled": [
+                    "true"
+                  ],
+                  "usernameLDAPAttribute": [
+                    "uid"
+                  ],
+                  "bindDn": [
+                    "cn=admin,dc=example,dc=org"
+                  ],
+                  "bindCredential": [
+                    "admin123"
+                  ],
+                  "changedSyncPeriod": [
+                    "-1"
+                  ],
+                  "lastSync": [
+                    "1622010092"
+                  ],
+                  "vendor": [
+                    "other"
+                  ],
+                  "uuidLDAPAttribute": [
+                    "entryUUID"
+                  ],
+                  "connectionUrl": [
+                    "ldap://$(sys:JUNIT_LDAP_HOST):$(sys:JUNIT_LDAP_PORT)"
+                  ],
+                  "allowKerberosAuthentication": [
+                    "false"
+                  ],
+                  "syncRegistrations": [
+                    "false"
+                  ],
+                  "authType": [
+                    "simple"
+                  ],
+                  "debug": [
+                    "false"
+                  ],
+                  "searchScope": [
+                    "1"
+                  ],
+                  "useTruststoreSpi": [
+                    "ldapsOnly"
+                  ],
+                  "priority": [
+                    "0"
+                  ],
+                  "trustEmail": [
+                    "false"
+                  ],
+                  "userObjectClasses": [
+                    "inetOrgPerson, organizationalPerson"
+                  ],
+                  "rdnLDAPAttribute": [
+                    "uid"
+                  ],
+                  "editMode": [
+                    "WRITABLE"
+                  ],
+                  "validatePasswordPolicy": [
+                    "false"
+                  ],
+                  "batchSizeForSync": [
+                    "1000"
+                  ]
+                }
+              }
+            ]
+          },
+          groups: 
+            - name: {{ .Values.admin.group }}
+              realmRoles: 
+                - admin
+          identityProviders:
+            - alias: admin-oidc
+              displayName: "Admin OIDC"
+              providerId: oidc
+              enabled: true
+              trustEmail: true
+              # firstBrokerLoginFlowAlias: "first broker login"
+              # storeToken: false
+              # authenticateByDefault: false
+              # linkOnly: false
+              config:
+                clientId: {{ include "names.oidc_client" . }}
+                clientAuthMethod: client_secret_post
+                clientSecret: {{ include "secrets.oidc_client" . }}
+                tokenUrl: {{ include "urls.oidc_token" . }}
+                authorizationUrl: {{ include "urls.oidc_auth" . }}
+                validateSignature: "true"
+                useJwksUrl: "true"
+                jwksUrl: {{ include "urls.oidc_jwks" . }}
+                syncMode: FORCE
+                defaultScope: "email groups profile openid"
+                guiOrder: 0
+                # backchannelSupported: true
+          identityProviderMappers:
+            - name: admin-oidc-group-mapper
+              identityProviderAlias: admin-oidc
+              identityProviderMapper: "oidc-advanced-group-idp-mapper"
+              config:
+                claims: {{ printf "[{\"key\": \"groups\",\"value\": %s}]" (.Values.admin.group | quote) | quote }}
+                group: {{ .Values.admin.group | quote }}
+                # syncMode: FORCE
+          clients: 
+            - clientId: {{ include "names.oidc_client" . | quote }}
+              name: {{ printf "%s-oidc-client" .Values.domain }}
+              description: {{ printf "SSO for %s" .Values.domain | quote }}
+              enabled: true
+              clientAuthenticatorType: client-secret
+              secret: {{ include "secrets.oidc_client" . | quote }}
+              redirectUris: 
+                - "*"
+              webOrigins: 
+                - "*"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: dex
+  namespace: sso
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: dex
+      version: '0.8.2'
+      sourceRef:
+        kind: HelmRepository
+        name: dex
+        namespace: flux-system
+  values:
+    envVars:
+      - name: IDP_CLIENT_ID
+        value: {{ .Values.admin.idp.clientID }}
+      - name: IDP_CLIENT_SECRET
+        value: {{ .Values.admin.idp.clientSecret }}
+    config:
+      # See https://dexidp.io/docs/storage/ for more options
+      storage:
+        type: kubernetes
+        config:
+          inCluster: true
+      issuer: {{ include "urls.oidc_issuer" . }}
+      connectors:     
+        - type: {{ .Values.admin.idp.type }}
+          id: {{ printf "adminIDP-%s" .Values.admin.idp.type }}
+          name: {{ printf "adminIDP-%s" .Values.admin.idp.type }}
+          config:
+            # Credentials can be string literals or pulled from the environment.
+            clientID: $IDP_CLIENT_ID
+            clientSecret: $IDP_CLIENT_SECRET
+            redirectURI: {{ include "urls.oidc_callback" . }}
+            # flag which will switch from using the internal GitHub id to the users handle (@mention) as the user id.
+            # It is possible for a user to change their own user name but it is very rare for them to do so
+            {{ if eq .Values.idp.type "github" -}}
+            useLoginAsID: true
+            loadAllGroups: true
+            {{- else if eq .Values.idp.type "oidc" -}}
+            issuerURL: {{ .Values.admin.idp.issuerURL }}
+            scopes:
+              - profile
+              - email
+              - groups
+            {{- end }}
+      staticClients:
+        - id: {{ include "names.oidc_client" . }}
+          secret: {{ include "secrets.oidc_client" . }}
+          name: "Admin OIDC"
+          redirectURIs: 
+            - {{ include "urls.idp_callback" . }}
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+      hosts:
+        - host: {{ include "hosts.oidc" . }}
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls:
+        - hosts:
+            - {{ include "hosts.oidc" . }}
+          secretName: dex-cert
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -187,8 +560,8 @@ spec:
         upstreams = "file:///dev/null"
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
         provider = "oidc"
-        provider_display_name = "Keycloak OIDC"
-        oidc_issuer_url = {{ include "urls.oidc_issuer" . | quote }}
+        provider_display_name = {{ printf "SSO for %s" .Values.domain | quote }}
+        oidc_issuer_url = {{ include "urls.idp_issuer" . | quote }}
         redirect_url = {{ include "urls.authproxy_callback" . | quote }}
         set_xauthrequest = true
         set_authorization_header = true

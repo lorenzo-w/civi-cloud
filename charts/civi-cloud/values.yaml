@@ -15,6 +15,7 @@ organizationName: "" # The full name of your organization
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)
   keycloak: "id"
+  dex: "oidc"
   oauth2_proxy: "auth"
   phpldapadmin: "ldap"
   homer: "home"
