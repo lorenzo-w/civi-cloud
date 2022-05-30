@@ -55,10 +55,10 @@
 {{ derivePassword 1 "maximum" .Values.secretSeed "local-oidc-client" .Values.domain | b64enc }}
 {{- end -}}
 
-{{- define "names.oidc_client" -}}
+{{- define "names.admin_oidc_client" -}}
 {{ "local" }}
 {{- end -}}
-{{- define "secrets.oidc_client" -}}
+{{- define "secrets.admin_oidc_client" -}}
 {{ derivePassword 1 "maximum" .Values.secretSeed "admin-oidc-client" .Values.domain | b64enc }}
 {{- end -}}
 
@@ -82,6 +82,8 @@
 {{ derivePassword 1 "maximum" .Values.secretSeed "keycloak-management" .Values.domain | b64enc }}
 {{- end -}}
 
+{{- $domain_components := splitList "." .Values.domain -}}
+
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -90,7 +92,7 @@ metadata:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: openldap-stack
+  name: openldap
   namespace: sso
 spec:
   interval: 5m
@@ -142,7 +144,7 @@ spec:
         name: bitnami
         namespace: flux-system
   dependsOn:
-    - name: openldap-stack
+    - name: openldap
       namespace: sso
   values:
     auth:
@@ -186,239 +188,212 @@ spec:
         inline:
           enabled: true
           realm: master
-          "components": {
-            "org.keycloak.storage.UserStorageProvider": [
-              {
-                "id": "ldap",
-                "name": "ldap",
-                "providerId": "ldap",
-                "subComponents": {
-                  "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
-                    {
-                      "name": "last name",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "is.mandatory.in.ldap": [
-                          "true"
-                        ],
-                        "read.only": [
-                          "false"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "true"
-                        ],
-                        "user.model.attribute": [
-                          "lastName"
-                        ]
-                      }
-                    },
-                    {
-                      "name": "first name",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "ldap.attribute": [
-                          "cn"
-                        ],
-                        "is.mandatory.in.ldap": [
-                          "true"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "true"
-                        ],
-                        "read.only": [
-                          "false"
-                        ],
-                        "user.model.attribute": [
-                          "firstName"
-                        ]
-                      }
-                    },
-                    {
-                      "name": "creation date",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "ldap.attribute": [
-                          "createTimestamp"
-                        ],
-                        "is.mandatory.in.ldap": [
-                          "false"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "true"
-                        ],
-                        "read.only": [
-                          "true"
-                        ],
-                        "user.model.attribute": [
-                          "createTimestamp"
-                        ]
-                      }
-                    },
-                    {
-                      "name": "username",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "ldap.attribute": [
-                          "uid"
-                        ],
-                        "is.mandatory.in.ldap": [
-                          "true"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "false"
-                        ],
-                        "read.only": [
-                          "false"
-                        ],
-                        "user.model.attribute": [
-                          "username"
-                        ]
-                      }
-                    },
-                    {
-                      "name": "modify date",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "ldap.attribute": [
-                          "modifyTimestamp"
-                        ],
-                        "is.mandatory.in.ldap": [
-                          "false"
-                        ],
-                        "read.only": [
-                          "true"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "true"
-                        ],
-                        "user.model.attribute": [
-                          "modifyTimestamp"
-                        ]
-                      }
-                    },
-                    {
-                      "name": "email",
-                      "providerId": "user-attribute-ldap-mapper",
-                      "subComponents": {},
-                      "config": {
-                        "ldap.attribute": [
-                          "mail"
-                        ],
-                        "is.mandatory.in.ldap": [
-                          "false"
-                        ],
-                        "always.read.value.from.ldap": [
-                          "false"
-                        ],
-                        "read.only": [
-                          "false"
-                        ],
-                        "user.model.attribute": [
-                          "email"
-                        ]
-                      }
-                    }
-                  ]
-                },
-                "config": {
-                  "pagination": [
-                    "true"
-                  ],
-                  "fullSyncPeriod": [
-                    "-1"
-                  ],
-                  "connectionPooling": [
-                    "true"
-                  ],
-                  "usersDn": [
-                    "ou=People,dc=example,dc=org"
-                  ],
-                  "cachePolicy": [
-                    "DEFAULT"
-                  ],
-                  "useKerberosForPasswordAuthentication": [
-                    "false"
-                  ],
-                  "importEnabled": [
-                    "true"
-                  ],
-                  "enabled": [
-                    "true"
-                  ],
-                  "usernameLDAPAttribute": [
-                    "uid"
-                  ],
-                  "bindDn": [
-                    "cn=admin,dc=example,dc=org"
-                  ],
-                  "bindCredential": [
-                    "admin123"
-                  ],
-                  "changedSyncPeriod": [
-                    "-1"
-                  ],
-                  "lastSync": [
-                    "1622010092"
-                  ],
-                  "vendor": [
-                    "other"
-                  ],
-                  "uuidLDAPAttribute": [
-                    "entryUUID"
-                  ],
-                  "connectionUrl": [
-                    "ldap://$(sys:JUNIT_LDAP_HOST):$(sys:JUNIT_LDAP_PORT)"
-                  ],
-                  "allowKerberosAuthentication": [
-                    "false"
-                  ],
-                  "syncRegistrations": [
-                    "false"
-                  ],
-                  "authType": [
-                    "simple"
-                  ],
-                  "debug": [
-                    "false"
-                  ],
-                  "searchScope": [
-                    "1"
-                  ],
-                  "useTruststoreSpi": [
-                    "ldapsOnly"
-                  ],
-                  "priority": [
-                    "0"
-                  ],
-                  "trustEmail": [
-                    "false"
-                  ],
-                  "userObjectClasses": [
-                    "inetOrgPerson, organizationalPerson"
-                  ],
-                  "rdnLDAPAttribute": [
-                    "uid"
-                  ],
-                  "editMode": [
-                    "WRITABLE"
-                  ],
-                  "validatePasswordPolicy": [
-                    "false"
-                  ],
-                  "batchSizeForSync": [
-                    "1000"
-                  ]
-                }
-              }
-            ]
-          },
+          components:
+            org.keycloak.storage.UserStorageProvider:
+              - id: ldap
+                name: ldap
+                providerId: ldap
+                subComponents:
+                  org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
+                    - name: last name
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        is.mandatory.in.ldap:
+                          - "true"
+                        read.only:
+                          - "false"
+                        always.read.value.from.ldap:
+                          - "true"
+                        user.model.attribute:
+                          - lastName
+                    - name: first name
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.attribute: 
+                          - cn
+                        is.mandatory.in.ldap: 
+                          - "true"
+                        always.read.value.from.ldap: 
+                          - "true"
+                        read.only: 
+                          - "false"
+                        user.model.attribute: 
+                          - firstName
+                    - name: creation date
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.attribute: 
+                          - createTimestamp
+                        is.mandatory.in.ldap: 
+                          - "false"
+                        always.read.value.from.ldap: 
+                          - "true"
+                        read.only: 
+                          - "true"
+                        user.model.attribute: 
+                          - createTimestamp
+                    - name: username
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.attribute: 
+                          - uid
+                        is.mandatory.in.ldap: 
+                          - "true"
+                        always.read.value.from.ldap: 
+                          - "false"
+                        read.only: 
+                          - "false"
+                        user.model.attribute: 
+                          username
+                    - name: modify date
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.attribute: 
+                          - modifyTimestamp
+                        is.mandatory.in.ldap: 
+                          - "false"
+                        read.only: 
+                          - "true"
+                        always.read.value.from.ldap: 
+                          - "true"
+                        user.model.attribute: 
+                          - modifyTimestamp
+                    - name: email
+                      providerId: user-attribute-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.attribute: 
+                          - mail
+                        is.mandatory.in.ldap: 
+                          - "false"
+                        always.read.value.from.ldap: 
+                          - "false"
+                        read.only: 
+                          - "false"
+                        user.model.attribute: 
+                          - email
+                    - name: groups
+                      providerId: group-ldap-mapper
+                      config:
+                        drop.non.existing.groups.during.sync:
+                          - "false"
+                        group.name.ldap.attribute:
+                          - cn
+                        group.object.classes:
+                          - groupOfNames
+                        groups.dn:
+                          - {{ printf "ou=groups,dc=%s" (join ",dc=" $domain_components) | quote }}
+                        groups.ldap.filter: []
+                        groups.path:
+                          - /
+                        ignore.missing.groups:
+                          - "false"
+                        mapped.group.attributes: []
+                        memberof.ldap.attribute:
+                          - memberOf
+                        membership.attribute.type:
+                          - DN
+                        membership.ldap.attribute:
+                          - member
+                        membership.user.ldap.attribute:
+                          - uid
+                        mode:
+                          - LDAP_ONLY
+                        preserve.group.inheritance:
+                          - "true"
+                        user.roles.retrieve.strategy:
+                          - LOAD_GROUPS_BY_MEMBER_ATTRIBUTE
+                    - name: roles
+                      providerId: role-ldap-mapper
+                      config:
+                        client.id: []
+                        role.name.ldap.attribute:
+                          - cn
+                        role.object.classes:
+                          - groupOfNames
+                        roles.dn:
+                          - {{ printf "ou=roles,dc=%s" (join ",dc=" $domain_components) | quote }}
+                        roles.ldap.filter: []
+                        memberof.ldap.attribute:
+                          - memberOf
+                        membership.attribute.type:
+                          - DN
+                        membership.ldap.attribute:
+                          - member
+                        membership.user.ldap.attribute:
+                          - uid
+                        mode:
+                          - LDAP_ONLY
+                        use.realm.roles.mapping:
+                          - "true"
+                        user.roles.retrieve.strategy:
+                          - LOAD_ROLES_BY_MEMBER_ATTRIBUTE
+                config: 
+                  pagination: 
+                    - "true"
+                  fullSyncPeriod: 
+                    - "-1"
+                  connectionPooling: 
+                    - "true"
+                  usersDn:
+                    - {{ printf "ou=users,dc=%s" (join ",dc=" $domain_components) | quote }}
+                  cachePolicy: 
+                    - DEFAULT
+                  useKerberosForPasswordAuthentication: 
+                    - "false"
+                  importEnabled: 
+                    - "true"
+                  enabled: 
+                    - "true"
+                  usernameLDAPAttribute: 
+                    - uid
+                  bindDn: 
+                    - {{ printf "cn=admin,dc=%s" (join ",dc=" $domain_components) | quote }}
+                  bindCredential: 
+                    - {{ include "secrets.ldap_admin_pw" . | quote }}
+                  changedSyncPeriod: 
+                    - "-1"
+                  # lastSync: ["1622010092"]
+                  vendor: 
+                    - "other"
+                  uuidLDAPAttribute: 
+                    - "entryUUID"
+                  connectionUrl: 
+                    - ldap://openldap.sso.svc.cluster.local:389
+                  allowKerberosAuthentication: 
+                    - "false"
+                  syncRegistrations: 
+                    - "true"
+                  authType: 
+                    - simple
+                  debug: 
+                    - "false"
+                  searchScope: 
+                    - "1"
+                  useTruststoreSpi: 
+                    - ldapsOnly
+                  priority: 
+                    - "0"
+                  trustEmail: 
+                    - "false"
+                  userObjectClasses: 
+                    - inetOrgPerson
+                    - organizationalPerson
+                  rdnLDAPAttribute: 
+                    - uid
+                  editMode: 
+                    - WRITABLE
+                  validatePasswordPolicy: 
+                    - "false"
+                  batchSizeForSync: 
+                    - "1000"
           groups: 
-            - name: {{ .Values.admin.group }}
+            - name: {{ .Values.admin.group | quote }}
               realmRoles: 
                 - admin
           identityProviders:
@@ -432,9 +407,9 @@ spec:
               # authenticateByDefault: false
               # linkOnly: false
               config:
-                clientId: {{ include "names.oidc_client" . }}
+                clientId: {{ include "names.admin_oidc_client" . }}
                 clientAuthMethod: client_secret_post
-                clientSecret: {{ include "secrets.oidc_client" . }}
+                clientSecret: {{ include "secrets.admin_oidc_client" . }}
                 tokenUrl: {{ include "urls.oidc_token" . }}
                 authorizationUrl: {{ include "urls.oidc_auth" . }}
                 validateSignature: "true"
@@ -503,10 +478,10 @@ spec:
             redirectURI: {{ include "urls.oidc_callback" . }}
             # flag which will switch from using the internal GitHub id to the users handle (@mention) as the user id.
             # It is possible for a user to change their own user name but it is very rare for them to do so
-            {{ if eq .Values.idp.type "github" -}}
+            {{ if eq .Values.admin.idp.type "github" -}}
             useLoginAsID: true
             loadAllGroups: true
-            {{- else if eq .Values.idp.type "oidc" -}}
+            {{- else if eq .Values.admin.idp.type "oidc" -}}
             issuerURL: {{ .Values.admin.idp.issuerURL }}
             scopes:
               - profile
@@ -514,8 +489,8 @@ spec:
               - groups
             {{- end }}
       staticClients:
-        - id: {{ include "names.oidc_client" . }}
-          secret: {{ include "secrets.oidc_client" . }}
+        - id: {{ include "names.admin_oidc_client" . }}
+          secret: {{ include "secrets.admin_oidc_client" . }}
           name: "Admin OIDC"
           redirectURIs: 
             - {{ include "urls.idp_callback" . }}
