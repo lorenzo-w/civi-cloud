@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dolibarr.fullname" . }}
+  labels:
+    {{- include "dolibarr.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "dolibarr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "dolibarr.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "dolibarr.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DOLI_DB_HOST
+              value: {{ .Values.mariadb.fullnameOverride }}
+            - name: DOLI_DB_NAME
+              value: {{ .Values.mariadb.auth.database }}
+            - name: DOLI_DB_USER
+              value: {{ .Values.mariadb.auth.username }}
+            - name: DOLI_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: mariadb-password
+            - name: DOLI_DB_ROOT_LOGIN # For database creation on install
+              value: root
+            - name: DOLI_DB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: mariadb-root-password
+            - name: DOLI_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: doli-admin-creds
+                  key: password
+            - name: DOLI_MODULES
+              value: {{ join "," .Values.dolibarr.modules | quote }}
+            - name: DOLI_URL_ROOT
+              value: {{ printf "http://%s" .Values.ingress.host | quote }}
+            - name: DOLI_AUTH
+              value: 
+                {{- if .Values.ldap.enabled -}}
+                  {{- "dolibarr,ldap" | quote | indent 1 -}}
+                  {{- else -}}
+                  {{- "dolibarr" | quote | indent 1 -}}
+                {{- end }}
+            - name: DOLI_PROD
+              value: 
+                {{- if .Values.dolibarr.prod -}}
+                  {{- "1" | quote | indent 1 -}}
+                  {{- else -}}
+                  {{- "0" | quote | indent 1 -}}
+                {{- end }}
+            - name: DOLI_NO_CSRF_CHECK
+              value: "1"
+            - name: DOLI_LDAP_HOST
+              value: {{ .Values.ldap.host }}
+            - name: DOLI_LDAP_PORT
+              value: {{ .Values.ldap.port }}
+            - name: DOLI_LDAP_DN
+              value: {{ .Values.ldap.dn }}
+            - name: DOLI_LDAP_LOGIN_ATTRIBUTE
+              value: {{ .Values.ldap.loginAttribute }}
+            - name: DOLI_LDAP_ADMIN_LOGIN
+              value: {{ .Values.ldap.admin.login }}
+            - name: DOLI_LDAP_ADMIN_PASS
+              value: {{ .Values.ldap.admin.password }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
