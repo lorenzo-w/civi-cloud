@@ -35,7 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: DOLI_DB_HOST
-              value: {{ printf "%s.%s.svc.cluster.local" .Values.mariadb.fullnameOverride .Namespace }}
+              value: {{ printf "%s.%s.svc.cluster.local" .Values.mariadb.fullnameOverride .Release.Namespace }}
             - name: DOLI_DB_NAME
               value: {{ .Values.mariadb.auth.database }}
             - name: DOLI_DB_USER

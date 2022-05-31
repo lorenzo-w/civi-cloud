@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: db-creds
-  namespace: {{ .Namespace }}
+  namespace: {{ .Release.Namespace }}
 type: Opaque
 data:
   mariadb-root-password: {{ randAlphaNum 32 | b64enc }}

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: doli-admin-creds
-  namespace: {{ .Namespace }}
+  namespace: {{ .Release.Namespace }}
 type: Opaque
 data:
   password: {{ randAlphaNum 32 | b64enc }}
