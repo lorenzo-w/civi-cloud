@@ -1,11 +1,15 @@
 {{- define "hosts.idp" -}}
 {{ printf "%s.%s" .Values.subdomains.keycloak .Values.domain }}
 {{- end -}}
-{{- define "urls.idp_issuer" -}}
+{{- define "urls.idp" -}}
 {{ printf "https://%s" (include "hosts.idp" .) }}
 {{- end -}}
-{{- define "urls.idp_callback" -}}
-{{ printf "https://%s/realms/master/broker/oidc/endpoint" (include "hosts.idp" .) }}
+{{- define "urls.idp_realm" -}}
+{{ printf "https://%s/realms/master" (include "hosts.idp" .) }}
+{{- end -}}
+
+{{- define "urls.admin_oidc_callback" -}}
+{{ printf "https://%s/realms/master/broker/admin-oidc/endpoint" (include "hosts.idp" .) }}
 {{- end -}}
 
 {{- define "hosts.oidc" -}}
@@ -34,7 +38,7 @@
 {{ printf "https://%s/oauth2/start" (include "hosts.authproxy" .) }}
 {{- end -}}
 {{- define "urls.authproxy_check" -}}
-{{ "http://oauth2-proxy.sso.svc.cluster.local/oauth2/auth" }}
+{{ "http://oauth2-proxy.civi-sso.svc.cluster.local/oauth2/auth" }}
 {{- end -}}
 {{- define "urls.authproxy_callback" -}}
 {{ printf "https://%s/oauth2/callback" (include "hosts.authproxy" .) }}
@@ -62,6 +66,9 @@
 {{ derivePassword 1 "maximum" .Values.secretSeed "admin-oidc-client" .Values.domain | b64enc }}
 {{- end -}}
 
+{{- define "names.ldap_admin_dn" -}}
+{{ printf "cn=admin,dc=%s" (.Values.domain | splitList "." | join ",dc=") | quote }}
+{{- end -}}
 {{- define "secrets.ldap_admin_pw" -}}
 {{ derivePassword 1 "maximum" .Values.secretSeed "openldap-admin" .Values.domain | b64enc }}
 {{- end -}}
@@ -83,17 +90,20 @@
 {{- end -}}
 
 {{- $domain_components := splitList "." .Values.domain -}}
+{{- $users_dn := printf "ou=users,dc=%s" (join ",dc=" $domain_components) -}}
+{{- $groups_dn := printf "ou=groups,dc=%s" (join ",dc=" $domain_components) -}}
+{{- $roles_dn := printf "ou=roles,dc=%s" (join ",dc=" $domain_components) -}}
 
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: sso
+  name: civi-sso
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: openldap
-  namespace: sso
+  namespace: civi-sso
 spec:
   interval: 5m
   chart:
@@ -105,6 +115,8 @@ spec:
         name: helm-openldap
         namespace: flux-system
   values:
+    customTLS:
+      enabled: false
     replicaCount: 2
     global:
       ldapDomain: {{ .Values.domain }}
@@ -112,6 +124,24 @@ spec:
       configPassword: {{ include "secrets.ldap_config_pw" . }}
     env:
       LDAP_ORGANISATION: {{ .Values.organizationName | quote }}
+    customFileSets:
+      - name: bootstrap-ldif
+        targetPath: /container/service/slapd/assets/config/bootstrap/ldif
+        files:
+          - filename: ous.ldif
+            content: |
+              dn: {{ $users_dn }}
+              objectClass: organizationalUnit
+              ou: users
+
+              dn: {{ $groups_dn }}
+              objectClass: organizationalUnit
+              ou: groups
+
+              dn: {{ $roles_dn }}
+              objectClass: organizationalUnit
+              ou: roles
+
     ltb-passwd:
       enabled: false
     phpldapadmin:
@@ -132,7 +162,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: keycloak
-  namespace: sso
+  namespace: civi-sso
 spec:
   interval: 5m
   chart:
@@ -145,7 +175,7 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: openldap
-      namespace: sso
+      namespace: civi-sso
   values:
     auth:
       adminUser: {{ include "names.keycloak_admin_user" . }}
@@ -158,12 +188,14 @@ spec:
         cert-manager.io/cluster-issuer: acme
       hostname: {{ include "hosts.idp" . }}
       tls: true
+    service:
+      type: ClusterIP
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: keycloak-config
-  namespace: sso
+  namespace: civi-sso
 spec:
   interval: 5m
   chart:
@@ -176,11 +208,14 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: keycloak
-      namespace: sso
+      namespace: civi-sso
   values:
+    image:
+      tag: "5.2.0-18.0.0"
     env: 
-      KEYCLOAK_URL: {{ include "urls.idp_issuer" . }}
+      KEYCLOAK_URL: {{ include "urls.idp" . }}
       KEYCLOAK_USER: {{ include "names.keycloak_admin_user" . }}
+      IMPORT_FILES_LOCATIONS: "/config/master.json"
     secrets:
       KEYCLOAK_PASSWORD: {{ include "secrets.keycloak_admin_pw" . }}
     config:
@@ -199,6 +234,8 @@ spec:
                       providerId: user-attribute-ldap-mapper
                       subComponents: {}
                       config: 
+                        ldap.attribute: 
+                          - sn
                         is.mandatory.in.ldap:
                           - "true"
                         read.only:
@@ -212,9 +249,9 @@ spec:
                       subComponents: {}
                       config: 
                         ldap.attribute: 
-                          - cn
+                          - givenName
                         is.mandatory.in.ldap: 
-                          - "true"
+                          - "false"
                         always.read.value.from.ldap: 
                           - "true"
                         read.only: 
@@ -235,20 +272,6 @@ spec:
                           - "true"
                         user.model.attribute: 
                           - createTimestamp
-                    - name: username
-                      providerId: user-attribute-ldap-mapper
-                      subComponents: {}
-                      config: 
-                        ldap.attribute: 
-                          - uid
-                        is.mandatory.in.ldap: 
-                          - "true"
-                        always.read.value.from.ldap: 
-                          - "false"
-                        read.only: 
-                          - "false"
-                        user.model.attribute: 
-                          username
                     - name: modify date
                       providerId: user-attribute-ldap-mapper
                       subComponents: {}
@@ -270,13 +293,23 @@ spec:
                         ldap.attribute: 
                           - mail
                         is.mandatory.in.ldap: 
-                          - "false"
+                          - "true"
                         always.read.value.from.ldap: 
-                          - "false"
+                          - "true"
                         read.only: 
                           - "false"
                         user.model.attribute: 
                           - email
+                    - name: fullname
+                      providerId: full-name-ldap-mapper
+                      subComponents: {}
+                      config: 
+                        ldap.full.name.attribute:
+                          - cn
+                        read.only: 
+                          - "false"
+                        write.only:
+                          - "true"
                     - name: groups
                       providerId: group-ldap-mapper
                       config:
@@ -287,7 +320,7 @@ spec:
                         group.object.classes:
                           - groupOfNames
                         groups.dn:
-                          - {{ printf "ou=groups,dc=%s" (join ",dc=" $domain_components) | quote }}
+                          - {{ $groups_dn }}
                         groups.ldap.filter: []
                         groups.path:
                           - /
@@ -317,7 +350,7 @@ spec:
                         role.object.classes:
                           - groupOfNames
                         roles.dn:
-                          - {{ printf "ou=roles,dc=%s" (join ",dc=" $domain_components) | quote }}
+                          - {{ $roles_dn }}
                         roles.ldap.filter: []
                         memberof.ldap.attribute:
                           - memberOf
@@ -341,7 +374,7 @@ spec:
                   connectionPooling: 
                     - "true"
                   usersDn:
-                    - {{ printf "ou=users,dc=%s" (join ",dc=" $domain_components) | quote }}
+                    - {{ $users_dn }}
                   cachePolicy: 
                     - DEFAULT
                   useKerberosForPasswordAuthentication: 
@@ -353,7 +386,7 @@ spec:
                   usernameLDAPAttribute: 
                     - uid
                   bindDn: 
-                    - {{ printf "cn=admin,dc=%s" (join ",dc=" $domain_components) | quote }}
+                    - {{ include "names.ldap_admin_dn" . }}
                   bindCredential: 
                     - {{ include "secrets.ldap_admin_pw" . | quote }}
                   changedSyncPeriod: 
@@ -364,7 +397,7 @@ spec:
                   uuidLDAPAttribute: 
                     - "entryUUID"
                   connectionUrl: 
-                    - ldap://openldap.sso.svc.cluster.local:389
+                    - ldap://openldap.civi-sso.svc.cluster.local:389
                   allowKerberosAuthentication: 
                     - "false"
                   syncRegistrations: 
@@ -420,6 +453,13 @@ spec:
                 guiOrder: 0
                 # backchannelSupported: true
           identityProviderMappers:
+            - name: admin-oidc-email-mapper
+              identityProviderAlias: admin-oidc
+              identityProviderMapper: "oidc-user-attribute-idp-mapper"
+              config:
+                claim: email
+                user.attribute: email
+                # syncMode: FORCE
             - name: admin-oidc-group-mapper
               identityProviderAlias: admin-oidc
               identityProviderMapper: "oidc-advanced-group-idp-mapper"
@@ -442,8 +482,8 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: dex
-  namespace: sso
+  name: civi-dex
+  namespace: civi-sso
 spec:
   interval: 5m
   chart:
@@ -493,7 +533,7 @@ spec:
           secret: {{ include "secrets.admin_oidc_client" . }}
           name: "Admin OIDC"
           redirectURIs: 
-            - {{ include "urls.idp_callback" . }}
+            - {{ include "urls.admin_oidc_callback" . }}
     ingress:
       enabled: true
       annotations:
@@ -512,7 +552,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: oauth2-proxy
-  namespace: sso
+  namespace: civi-sso
 spec:
   interval: 5m
   chart:
@@ -525,7 +565,7 @@ spec:
         namespace: flux-system
   dependsOn:
     - name: keycloak-config
-      namespace: sso
+      namespace: civi-sso
   values:
     config:
       clientID: {{ include "names.oidc_client" . }}
@@ -536,7 +576,7 @@ spec:
         whitelist_domains = [ {{ printf ".%s" .Values.domain | quote }} ]
         provider = "oidc"
         provider_display_name = {{ printf "SSO for %s" .Values.domain | quote }}
-        oidc_issuer_url = {{ include "urls.idp_issuer" . | quote }}
+        oidc_issuer_url = {{ include "urls.idp_realm" . | quote }}
         redirect_url = {{ include "urls.authproxy_callback" . | quote }}
         set_xauthrequest = true
         set_authorization_header = true
