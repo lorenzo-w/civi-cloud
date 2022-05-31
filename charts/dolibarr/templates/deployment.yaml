@@ -45,13 +45,6 @@ spec:
                 secretKeyRef:
                   name: db-creds
                   key: mariadb-password
-            - name: DOLI_DB_ROOT_LOGIN # For database creation on install
-              value: root
-            - name: DOLI_DB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-creds
-                  key: mariadb-root-password
             - name: DOLI_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
