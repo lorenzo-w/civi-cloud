@@ -375,7 +375,7 @@ spec:
                   pagination: 
                     - "true"
                   fullSyncPeriod: 
-                    - "-1"
+                    - "600"
                   connectionPooling: 
                     - "true"
                   usersDn:
@@ -396,7 +396,6 @@ spec:
                     - {{ include "secrets.ldap_admin_pw" . | quote }}
                   changedSyncPeriod: 
                     - "-1"
-                  # lastSync: ["1622010092"]
                   vendor: 
                     - "other"
                   uuidLDAPAttribute: 
