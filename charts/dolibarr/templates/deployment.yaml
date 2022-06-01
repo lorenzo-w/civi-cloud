@@ -45,13 +45,13 @@ spec:
             - name: DOLI_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-creds
+                  name: {{ .Values.mariadb.fullnameOverride }}
                   key: mariadb-password
             - name: DOLI_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: doli-admin-creds
-                  key: password
+                  name: {{ include "dolibarr.fullname" . }}
+                  key: doli-admin-password
             - name: DOLI_MODULES
               value: {{ join "," .Values.dolibarr.modules | quote }}
             - name: DOLI_URL_ROOT
