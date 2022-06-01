@@ -7,7 +7,7 @@ metadata:
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   template:
     spec:
@@ -17,7 +17,7 @@ spec:
         command: ["mysql"]
         args:
           - {{ printf "--user=%s" .Values.mariadb.auth.username | quote }}
-          - "--password=$DB_PASSWORD"
+          - "--password=$(DB_PASSWORD)"
           - {{ printf "--host=%s" (include "mariadb.serviceHost" .) | quote }}
           - {{ printf "--port=%s" (toString .Values.mariadb.port) | quote }}
           - "--local-infile=1"
@@ -28,7 +28,7 @@ spec:
           - name: DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.mariadb.fullnameOverride }}
+                name: {{ .Values.mariadb.auth.existingSecret }}
                 key: mariadb-password
         volumeMounts:
           - name: config
