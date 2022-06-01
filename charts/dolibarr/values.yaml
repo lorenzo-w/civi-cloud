@@ -52,6 +52,7 @@ dolibarr:
     - modWebServices
     - modWorkflow
   config:
+    # name value entity type
     ADHERENT_DEFAULT_SENDINFOBYMAIL: "1" # 1 chaine
     ADHERENT_LOGIN_NOT_REQUIRED: "0" # 1 chaine
     ADHERENT_MAIL_FROM: "" # 1 chaine
