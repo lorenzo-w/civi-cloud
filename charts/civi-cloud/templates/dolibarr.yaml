@@ -18,6 +18,9 @@ spec:
         name: civi-cloud
         namespace: flux-system
   timeout: 10m0s # Timed out once before dolibarr was ready. Increase timeout to be sure.
+  dependsOn:
+    - name: openldap
+      namespace: civi-sso
   values:
     dolibarr:
       adminPassword: {{ .Values.admin.password | quote }}
