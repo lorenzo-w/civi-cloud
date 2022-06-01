@@ -14,14 +14,14 @@ spec:
       containers:
       - name: mysql-client
         image: mysql
-        command: 
-          - "mysql"
+        command: ["mysql"]
+        args:
           - {{ printf "--user=%s" .Values.mariadb.auth.username | quote }}
           - "--password=$DB_PASSWORD"
           - {{ printf "--host=%s" (include "mariadb.serviceHost" .) | quote }}
           - {{ printf "--port=%s" (toString .Values.mariadb.port) | quote }}
           - {{ .Values.mariadb.auth.database }}
-          - "< /doli/config.sql"
+          - "--execute='source /doli/config.sql'"
         env:
           - name: DB_PASSWORD
             valueFrom:
