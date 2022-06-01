@@ -293,7 +293,7 @@ spec:
                         ldap.attribute: 
                           - mail
                         is.mandatory.in.ldap: 
-                          - "true"
+                          - "false"
                         always.read.value.from.ldap: 
                           - "true"
                         read.only: 

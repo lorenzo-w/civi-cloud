@@ -12,6 +12,14 @@ admin:
 domain: "" # The public root domain of this cluster (e.g. "example.org")
 organizationName: "" # The full name of your organization
 
+smtp:
+  host: ""
+  port: ""
+  senderAddress: ""
+  login: ""
+  password: ""
+  tlsMode: "ssl/tls" # Alternatives: starttls, none
+
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)
   keycloak: "id"

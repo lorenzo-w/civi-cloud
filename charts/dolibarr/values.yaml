@@ -7,19 +7,24 @@ dolibarr:
   # adminPassword: ""
   modules:
     - modAccounting
+    - modAdherent
     - modAgenda
     - modApi
+    - modBanque
     - modBookmark
     - modCategorie
     - modContrat
     - modCron
     - modDav
     - modDocumentGeneration
+    - modDon
     - modEventOrganization
     - modExpenseReport
     - modExport
+    - modFacture
     - modFckeditor
     - modFournisseur
+    - modHoliday
     - modHRM
     - modImport
     - modLabel
@@ -30,12 +35,14 @@ dolibarr:
     - modOauth
     - modPaymentByBankTransfer
     - modPaypal
+    - modPrelevement
     - modPrinting
     - modProduct
     - modProjet
     - modReceiptPrinter
     - modRecruitment
     - modResource
+    - modSalaries
     - modService
     - modSocialNetworks
     - modSociete
@@ -44,6 +51,90 @@ dolibarr:
     - modTax
     - modWebServices
     - modWorkflow
+  config:
+    ADHERENT_DEFAULT_SENDINFOBYMAIL: "1" # 1 chaine
+    ADHERENT_LOGIN_NOT_REQUIRED: "0" # 1 chaine
+    ADHERENT_MAIL_FROM: "" # 1 chaine
+    ADHERENT_MAIL_REQUIRED: "1" # 1 chaine
+
+    CRON_KEY: "GENERATED ALPHANUM SECRET" # 0 chaine
+
+    LDAP_FIELD_ADDRESS: "street"
+    LDAP_FIELD_COMPANY: "o"
+    LDAP_FIELD_DESCRIPTION: "description"
+    LDAP_FIELD_FIRSTNAME: "givenName"
+    LDAP_FIELD_FULLNAME: "cn"
+    LDAP_FIELD_LOGIN: "uid"
+    LDAP_FIELD_MAIL: "mail"
+    LDAP_FIELD_MOBILE: "mobile"
+    LDAP_FIELD_NAME: "sn"
+    LDAP_FIELD_PASSWORD: "userPassword"
+    LDAP_FIELD_PHONE: "telephonenumber"
+    LDAP_FIELD_TITLE: "title"
+    LDAP_FIELD_TOWN: "l"
+    LDAP_FIELD_ZIP: "postalcode"
+    LDAP_FILTER_CONNECTION: "&(objectClass=inetOrgPerson)"
+    LDAP_GROUP_DN: "" # 1 chaine
+    LDAP_GROUP_FIELD_DESCRIPTION: "description"
+    LDAP_GROUP_FIELD_FULLNAME: "cn"
+    LDAP_GROUP_FIELD_GROUPID: "gidnumber"
+    LDAP_GROUP_FIELD_GROUPMEMBERS: "uniqueMember"
+    LDAP_GROUP_FILTER: "&(objectClass=groupOfNames)"
+    LDAP_GROUP_OBJECT_CLASS: "top,groupOfUniqueNames"
+    LDAP_KEY_GROUPS: "cn"
+    LDAP_KEY_MEMBERS: "uid"
+    LDAP_KEY_MEMBERS_TYPES: "cn"
+    LDAP_KEY_USERS: "uid"
+    LDAP_MEMBER_ACTIVE: "1" # 1 chaine
+    LDAP_MEMBER_DN: "ou=users,dc=example,dc=com"
+    LDAP_MEMBER_FIELD_ADDRESS: "street"
+    LDAP_MEMBER_FIELD_COMPANY: "o"
+    LDAP_MEMBER_FIELD_DESCRIPTION: "description"
+    LDAP_MEMBER_FIELD_FIRSTNAME: "givenName"
+    LDAP_MEMBER_FIELD_FULLNAME: "cn"
+    LDAP_MEMBER_FIELD_LOGIN: "uid"
+    LDAP_MEMBER_FIELD_MAIL: "mail"
+    LDAP_MEMBER_FIELD_MOBILE: "mobile"
+    LDAP_MEMBER_FIELD_NAME: "sn"
+    LDAP_MEMBER_FIELD_NOTE_PUBLIC: "publicnote"
+    LDAP_MEMBER_FIELD_PASSWORD: "userPassword"
+    LDAP_MEMBER_FIELD_PHONE: "telephonenumber"
+    LDAP_MEMBER_FIELD_PHONE_PERSO: "homephone"
+    LDAP_MEMBER_FIELD_TOWN: "l"
+    LDAP_MEMBER_FIELD_ZIP: "postalcode"
+    LDAP_MEMBER_FILTER: "&(objectClass=inetOrgPerson)"
+    LDAP_MEMBER_OBJECT_CLASS: "top,inetOrgPerson"
+    LDAP_MEMBER_TYPE_ACTIVE: "1" # 1 chaine
+    LDAP_MEMBER_TYPE_DN: "ou=groups,dc=example,dc=com"
+    LDAP_MEMBER_TYPE_FIELD_DESCRIPTION: "description"
+    LDAP_MEMBER_TYPE_FIELD_FULLNAME: "cn"
+    LDAP_MEMBER_TYPE_FIELD_GROUPMEMBERS: "uniqueMember"
+    LDAP_MEMBER_TYPE_OBJECT_CLASS: "top,groupOfUniqueNames"
+    LDAP_PASSWORD_HASH_TYPE: "md5"
+    LDAP_SERVER_HOST: "" # 1 chaine
+    LDAP_SERVER_PORT: "389"
+    LDAP_SERVER_PROTOCOLVERSION: "3"
+    LDAP_SERVER_TYPE: "openldap"
+    LDAP_SERVER_USE_TLS: "0"
+    LDAP_SYNCHRO_ACTIVE: "2" # 1 chaine
+    LDAP_USER_DN: "" # 1 chaine
+    LDAP_USER_OBJECT_CLASS: "top,inetOrgPerson"
+
+    MAILING_EMAIL_FROM: "" # 1 chaine
+
+    MAIN_LANG_DEFAULT: "en_US" # 1 chaine
+
+    MAIN_INFO_SOCIETE_MAIL: ""
+    MAIN_INFO_SOCIETE_NOM: "" # 1 chaine
+
+    MAIN_MAIL_DEFAULT_FROMTYPE: "company" # 1 chaine
+    MAIN_MAIL_EMAIL_FROM: "" # 1 chaine
+    MAIN_MAIL_EMAIL_TLS: "1" # 1 chaine
+    MAIN_MAIL_SENDMODE: "smtps" # 1 chaine
+    MAIN_MAIL_SMTPS_ID: "" # 1 chaine
+    MAIN_MAIL_SMTPS_PW: "" # 1 chaine
+    MAIN_MAIL_SMTP_PORT: "" # 1 chaine
+    MAIN_MAIL_SMTP_SERVER: "" # 1 chaine
 
 ldap:
   enabled: false
