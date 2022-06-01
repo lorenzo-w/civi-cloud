@@ -2,8 +2,5 @@ dependencies:
 - name: mariadb
   repository: https://charts.bitnami.com/bitnami
   version: 11.0.9
-- name: phpmyadmin
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.1.6
-digest: sha256:fd2278dabe92ed8bd0bb0d16da37e60e37f5e53760b1ab1b7f57a9e96bdf4a7f
-generated: "2022-06-01T15:41:50.1996422+02:00"
+digest: sha256:521d4b7f68138347490a5a1ccc7d46057f6a8cc02524a610ee6368b1a06fe62e
+generated: "2022-06-01T16:51:37.7920672+02:00"
