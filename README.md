@@ -68,7 +68,7 @@ Deploy a fully functional on-premise cloud infrastructure that encompasses all d
     - [Contacts](https://apps.nextcloud.com/apps/contacts)
     - [GroupFolders](https://apps.nextcloud.com/apps/groupfolders)
     - [Mail](https://apps.nextcloud.com/apps/mail)
-    - [SSO](https://apps.nextcloud.com/apps/user_saml)
+    - [OpenID](https://github.com/pulsejet/nextcloud-oidc-login)
     - [E3EE](https://apps.nextcloud.com/apps/end_to_end_encryption)
     - [Appointments](https://apps.nextcloud.com/apps/appointments)
     - [Circles](https://apps.nextcloud.com/apps/circles)
