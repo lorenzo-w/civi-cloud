@@ -134,6 +134,7 @@ affinity: {}
 
 mariadb:
   fullnameOverride: doli-db
+  port: 3306
   auth:
     database: dolibarr
     username: dolibarr
