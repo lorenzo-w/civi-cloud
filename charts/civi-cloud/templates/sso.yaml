@@ -117,7 +117,7 @@ spec:
   values:
     customTLS:
       enabled: false
-    replicaCount: 2
+    replicaCount: 1
     global:
       ldapDomain: {{ .Values.domain }}
       adminPassword: {{ include "secrets.ldap_admin_pw" . }}
