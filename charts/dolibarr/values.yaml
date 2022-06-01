@@ -160,3 +160,4 @@ mariadb:
   auth:
     database: dolibarr
     username: dolibarr
+    existingSecret: doli-db
