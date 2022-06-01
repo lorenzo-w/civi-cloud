@@ -19,12 +19,14 @@ spec:
         namespace: flux-system
   timeout: 10m0s # Timed out once before dolibarr was ready. Increase timeout to be sure.
   values:
+    dolibarr:
+      adminPassword: {{ .Values.admin.password | quote }}
     ldap:
       enabled: true
       host: openldap.civi-sso.svc.cluster.local
-      usersDn: {{ include "dn.users" . }}
-      groupsDn: {{ include "dn.groups" . }}
-      loginAttribute: email
+      usersDn: {{ include "dn.users" . | quote }}
+      groupsDn: {{ include "dn.groups" . | quote }}
+      loginAttribute: uid
       admin: 
         login: {{ include "names.ldap_admin_dn" . }}
         password: {{ include "secrets.ldap_admin_pw" . }}

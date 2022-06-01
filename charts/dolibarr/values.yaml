@@ -4,7 +4,7 @@
 
 dolibarr:
   prod: true
-  # adminPassword: ""
+  adminPassword: ""
   modules:
     - modAccounting
     - modAdherent

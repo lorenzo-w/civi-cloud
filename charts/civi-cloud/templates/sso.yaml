@@ -90,13 +90,13 @@
 {{- end -}}
 
 {{- define "dn.users" -}}
-{{ $users_dn := printf "ou=users,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{ printf "ou=users,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
 {{- end -}}
 {{- define "dn.groups" -}}
-{{ $users_dn := printf "ou=groups,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{ printf "ou=groups,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
 {{- end -}}
 {{- define "dn.roles" -}}
-{{ $users_dn := printf "ou=roles,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{ printf "ou=roles,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
 {{- end -}}
 
 kind: Namespace
@@ -135,15 +135,15 @@ spec:
         files:
           - filename: ous.ldif
             content: |
-              dn: {{ $users_dn }}
+              dn: {{ include "dn.users" . }}
               objectClass: organizationalUnit
               ou: users
 
-              dn: {{ $groups_dn }}
+              dn: {{ include "dn.groups" . }}
               objectClass: organizationalUnit
               ou: groups
 
-              dn: {{ $roles_dn }}
+              dn: {{ include "dn.roles" . }}
               objectClass: organizationalUnit
               ou: roles
 
