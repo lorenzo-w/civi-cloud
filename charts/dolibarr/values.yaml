@@ -54,7 +54,7 @@ dolibarr:
 
 org:
   name: ""
-  defaultLang: "en_US"
+  defaultLocale: "en_US"
 
 ldap:
   enabled: false

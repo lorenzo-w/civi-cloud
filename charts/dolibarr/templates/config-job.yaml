@@ -20,8 +20,10 @@ spec:
           - "--password=$DB_PASSWORD"
           - {{ printf "--host=%s" (include "mariadb.serviceHost" .) | quote }}
           - {{ printf "--port=%s" (toString .Values.mariadb.port) | quote }}
+          - "--local-infile=1"
           - {{ .Values.mariadb.auth.database }}
-          - "--execute='source /doli/config.sql'"
+          - "-e"
+          - "SOURCE /doli/config.sql;"
         env:
           - name: DB_PASSWORD
             valueFrom:

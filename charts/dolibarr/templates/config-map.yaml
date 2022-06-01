@@ -72,7 +72,7 @@ LDAP_SYNCHRO_ACTIVE: "2"
 LDAP_USER_DN: {{ .Values.ldap.usersDn | quote }}
 LDAP_USER_OBJECT_CLASS: "top,inetOrgPerson"
 MAILING_EMAIL_FROM: {{ .Values.smtp.senderAddress }}
-MAIN_LANG_DEFAULT: {{ .Values.org.defaultLang }}
+MAIN_LANG_DEFAULT: {{ .Values.org.defaultLocale }}
 MAIN_INFO_SOCIETE_MAIL: {{ .Values.smtp.senderAddress }}
 MAIN_INFO_SOCIETE_NOM: {{ .Values.org.name | quote }}
 MAIN_MAIL_DEFAULT_FROMTYPE: "company"
@@ -95,9 +95,8 @@ data:
   # TODO: Make mount point flexible, currently has to be mounted to /doli
   config.sql: | 
     LOAD DATA 
-      INFILE '/doli/config.csv' 
-      REPLACE 
-      INTO TABLE llx_const 
+      LOCAL INFILE '/doli/config.csv' 
+      REPLACE INTO TABLE llx_const 
       FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\' 
       LINES TERMINATED BY '\n' 
       (name, value, entity, type) 

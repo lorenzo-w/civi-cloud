@@ -17,16 +17,20 @@ spec:
         kind: GitRepository
         name: civi-cloud
         namespace: flux-system
+  timeout: 10m0s # Timed out once before dolibarr was ready. Increase timeout to be sure.
   values:
     ldap:
       enabled: true
       host: openldap.civi-sso.svc.cluster.local
-      dn: {{ printf "ou=users,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+      usersDn: {{ include "dn.users" . }}
+      groupsDn: {{ include "dn.groups" . }}
       loginAttribute: email
       admin: 
         login: {{ include "names.ldap_admin_dn" . }}
         password: {{ include "secrets.ldap_admin_pw" . }}
     smtp: {{ .Values.smtp | toYaml | nindent 6 }}
+    domain: {{ .Values.domain }}
+    org: {{ .Values.org | toYaml | nindent 6 }}
     ingress:
       enabled: true
       annotations:

@@ -10,7 +10,9 @@ admin:
   email: "" # Admin email address (for email notifications)
 
 domain: "" # The public root domain of this cluster (e.g. "example.org")
-organizationName: "" # The full name of your organization
+org:
+  name: "" # The full name of your organization
+  defaultLocale: "en_US"
 
 smtp:
   host: ""

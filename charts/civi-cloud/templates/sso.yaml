@@ -89,10 +89,15 @@
 {{ derivePassword 1 "maximum" .Values.secretSeed "keycloak-management" .Values.domain | b64enc }}
 {{- end -}}
 
-{{- $domain_components := splitList "." .Values.domain -}}
-{{- $users_dn := printf "ou=users,dc=%s" (join ",dc=" $domain_components) -}}
-{{- $groups_dn := printf "ou=groups,dc=%s" (join ",dc=" $domain_components) -}}
-{{- $roles_dn := printf "ou=roles,dc=%s" (join ",dc=" $domain_components) -}}
+{{- define "dn.users" -}}
+{{ $users_dn := printf "ou=users,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{- end -}}
+{{- define "dn.groups" -}}
+{{ $users_dn := printf "ou=groups,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{- end -}}
+{{- define "dn.roles" -}}
+{{ $users_dn := printf "ou=roles,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{- end -}}
 
 kind: Namespace
 apiVersion: v1
@@ -123,7 +128,7 @@ spec:
       adminPassword: {{ include "secrets.ldap_admin_pw" . }}
       configPassword: {{ include "secrets.ldap_config_pw" . }}
     env:
-      LDAP_ORGANISATION: {{ .Values.organizationName | quote }}
+      LDAP_ORGANISATION: {{ .Values.org.name | quote }}
     customFileSets:
       - name: bootstrap-ldif
         targetPath: /container/service/slapd/assets/config/bootstrap/ldif
@@ -320,7 +325,7 @@ spec:
                         group.object.classes:
                           - groupOfNames
                         groups.dn:
-                          - {{ $groups_dn }}
+                          - {{ include "dn.groups" . }}
                         groups.ldap.filter: []
                         groups.path:
                           - /
@@ -350,7 +355,7 @@ spec:
                         role.object.classes:
                           - groupOfNames
                         roles.dn:
-                          - {{ $roles_dn }}
+                          - {{ include "dn.roles" . }}
                         roles.ldap.filter: []
                         memberof.ldap.attribute:
                           - memberOf
@@ -374,7 +379,7 @@ spec:
                   connectionPooling: 
                     - "true"
                   usersDn:
-                    - {{ $users_dn }}
+                    - {{ include "dn.users" . }}
                   cachePolicy: 
                     - DEFAULT
                   useKerberosForPasswordAuthentication: 
