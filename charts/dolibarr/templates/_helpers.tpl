@@ -60,3 +60,15 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "dolibarr.pvcName" -}}
+{{- printf "%s-documents" (include "dolibarr.fullname" .) }}
+{{- end }}
+
+{{- define "dolibarr.cmName" -}}
+{{- printf "%s-config" (include "dolibarr.fullname" .) -}}
+{{- end }}
+
+{{- define "mariadb.serviceHost" -}}
+{{- printf "%s.%s.svc.cluster.local" .Values.mariadb.fullnameOverride .Release.Namespace -}}
+{{- end }}

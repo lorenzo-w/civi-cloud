@@ -27,15 +27,22 @@ spec:
       serviceAccountName: {{ include "dolibarr.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      - name: documents
+        persistentVolumeClaim:
+          claimName: {{ include "dolibarr.pvcName" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: /var/www/documents
+            name: documents
           env:
             - name: DOLI_DB_HOST
-              value: {{ printf "%s.%s.svc.cluster.local" .Values.mariadb.fullnameOverride .Release.Namespace }}
+              value: {{ include "mariadb.serviceHost" . }}
             - name: DOLI_DB_NAME
               value: {{ .Values.mariadb.auth.database }}
             - name: DOLI_DB_PORT
@@ -77,7 +84,7 @@ spec:
             - name: DOLI_LDAP_PORT
               value: {{ .Values.ldap.port | quote }}
             - name: DOLI_LDAP_DN
-              value: {{ .Values.ldap.dn }}
+              value: {{ .Values.ldap.usersDn }}
             - name: DOLI_LDAP_LOGIN_ATTRIBUTE
               value: {{ .Values.ldap.loginAttribute }}
             - name: DOLI_LDAP_ADMIN_LOGIN

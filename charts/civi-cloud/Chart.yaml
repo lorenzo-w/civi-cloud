@@ -3,5 +3,5 @@ apiVersion: v2
 name: civi-cloud
 description: Deploy a fully functional on-premise cloud infrastructure that encompasses all digital business needs of modern non-profits and SMEs.
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "1.0"

@@ -1,0 +1,108 @@
+{{- define "dolibarr.configValues" -}}
+ADHERENT_DEFAULT_SENDINFOBYMAIL: "1"
+ADHERENT_LOGIN_NOT_REQUIRED: "0"
+ADHERENT_MAIL_FROM: {{ .Values.smtp.senderAddress }}
+ADHERENT_MAIL_REQUIRED: "1"
+CRON_KEY: {{ include "common.secrets.passwords.manage" (dict "secret" (include "dolibarr.fullname" .) "key" "doli-cron-secret" "providedValues" (list "") "context" $) }} # 0 chaine
+LDAP_ADMIN_DN: {{ .Values.ldap.admin.login | quote }}
+LDAP_ADMIN_PASS: {{ .Values.ldap.admin.password | quote }}
+LDAP_FIELD_ADDRESS: "street"
+LDAP_FIELD_COMPANY: "o"
+LDAP_FIELD_DESCRIPTION: "description"
+LDAP_FIELD_FIRSTNAME: "givenName"
+LDAP_FIELD_FULLNAME: "cn"
+LDAP_FIELD_LOGIN: "uid"
+LDAP_FIELD_MAIL: "mail"
+LDAP_FIELD_MOBILE: "mobile"
+LDAP_FIELD_NAME: "sn"
+LDAP_FIELD_PASSWORD: "userPassword"
+LDAP_FIELD_PHONE: "telephonenumber"
+LDAP_FIELD_TITLE: "title"
+LDAP_FIELD_TOWN: "l"
+LDAP_FIELD_ZIP: "postalcode"
+LDAP_FILTER_CONNECTION: "&(objectClass=inetOrgPerson)"
+LDAP_GROUP_DN: {{ .Values.ldap.groupsDn | quote }}
+LDAP_GROUP_FIELD_DESCRIPTION: "description"
+LDAP_GROUP_FIELD_FULLNAME: "cn"
+LDAP_GROUP_FIELD_GROUPID: "gidnumber"
+LDAP_GROUP_FIELD_GROUPMEMBERS: "uniqueMember"
+LDAP_GROUP_FILTER: "&(objectClass=groupOfNames)"
+LDAP_GROUP_OBJECT_CLASS: "top,groupOfUniqueNames"
+LDAP_KEY_GROUPS: "cn"
+LDAP_KEY_MEMBERS: "uid"
+LDAP_KEY_MEMBERS_TYPES: "cn"
+LDAP_KEY_USERS: "uid"
+LDAP_MEMBER_ACTIVE: "1"
+LDAP_MEMBER_DN: {{ .Values.ldap.usersDn | quote }}
+LDAP_MEMBER_FIELD_ADDRESS: "street"
+LDAP_MEMBER_FIELD_COMPANY: "o"
+LDAP_MEMBER_FIELD_DESCRIPTION: "description"
+LDAP_MEMBER_FIELD_FIRSTNAME: "givenName"
+LDAP_MEMBER_FIELD_FULLNAME: "cn"
+LDAP_MEMBER_FIELD_LOGIN: "uid"
+LDAP_MEMBER_FIELD_MAIL: "mail"
+LDAP_MEMBER_FIELD_MOBILE: "mobile"
+LDAP_MEMBER_FIELD_NAME: "sn"
+LDAP_MEMBER_FIELD_NOTE_PUBLIC: "publicnote"
+LDAP_MEMBER_FIELD_PASSWORD: "userPassword"
+LDAP_MEMBER_FIELD_PHONE: "telephonenumber"
+LDAP_MEMBER_FIELD_PHONE_PERSO: "homephone"
+LDAP_MEMBER_FIELD_TOWN: "l"
+LDAP_MEMBER_FIELD_ZIP: "postalcode"
+LDAP_MEMBER_FILTER: "&(objectClass=inetOrgPerson)"
+LDAP_MEMBER_OBJECT_CLASS: "top,inetOrgPerson"
+LDAP_MEMBER_TYPE_ACTIVE: "1"
+LDAP_MEMBER_TYPE_DN: {{ .Values.ldap.groupsDn | quote }}
+LDAP_MEMBER_TYPE_FIELD_DESCRIPTION: "description"
+LDAP_MEMBER_TYPE_FIELD_FULLNAME: "cn"
+LDAP_MEMBER_TYPE_FIELD_GROUPMEMBERS: "uniqueMember"
+LDAP_MEMBER_TYPE_OBJECT_CLASS: "top,groupOfUniqueNames"
+LDAP_PASSWORD_HASH_TYPE: "md5"
+LDAP_SERVER_HOST: {{ .Values.ldap.host }}
+LDAP_SERVER_PORT: {{ .Values.ldap.port | quote }}
+LDAP_SERVER_PROTOCOLVERSION: "3"
+LDAP_SERVER_TYPE: "openldap"
+LDAP_SERVER_USE_TLS: 
+  {{- if .Values.ldap.tls -}}
+  {{- "1" | quote | indent 1 -}}
+  {{- else -}}
+  {{- "0" | quote | indent 1 -}}
+  {{- end }}
+LDAP_SYNCHRO_ACTIVE: "2"
+LDAP_USER_DN: {{ .Values.ldap.usersDn | quote }}
+LDAP_USER_OBJECT_CLASS: "top,inetOrgPerson"
+MAILING_EMAIL_FROM: {{ .Values.smtp.senderAddress }}
+MAIN_LANG_DEFAULT: {{ .Values.org.defaultLang }}
+MAIN_INFO_SOCIETE_MAIL: {{ .Values.smtp.senderAddress }}
+MAIN_INFO_SOCIETE_NOM: {{ .Values.org.name | quote }}
+MAIN_MAIL_DEFAULT_FROMTYPE: "company"
+MAIN_MAIL_EMAIL_FROM: {{ .Values.smtp.senderAddress }}
+MAIN_MAIL_EMAIL_TLS: "1"
+MAIN_MAIL_SENDMODE: "smtps"
+MAIN_MAIL_SMTPS_ID: {{ .Values.smtp.login }}
+MAIN_MAIL_SMTPS_PW: {{ .Values.smtp.password | quote }}
+MAIN_MAIL_SMTP_PORT: {{ .Values.smtp.port | quote }}
+MAIN_MAIL_SMTP_SERVER: {{ .Values.smtp.host }}
+{{- end -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dolibarr.cmName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "dolibarr.labels" . | nindent 4 }}
+data:
+  # TODO: Make mount point flexible, currently has to be mounted to /doli
+  config.sql: | 
+    LOAD DATA 
+      INFILE '/doli/config.csv' 
+      REPLACE 
+      INTO TABLE llx_const 
+      FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\' 
+      LINES TERMINATED BY '\n' 
+      (name, value, entity, type) 
+    ;
+  config.csv: | 
+    {{- range $key, $value := (include "dolibarr.configValues" .) | fromYaml }}
+      {{ $key }},{{ $value | quote }},"1","chaine"
+    {{- end }}

@@ -26,6 +26,7 @@ spec:
       admin: 
         login: {{ include "names.ldap_admin_dn" . }}
         password: {{ include "secrets.ldap_admin_pw" . }}
+    smtp: {{ .Values.smtp | toYaml | nindent 6 }}
     ingress:
       enabled: true
       annotations:
