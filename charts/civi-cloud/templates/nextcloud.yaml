@@ -1,0 +1,258 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: nextcloud
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nextcloud-autoconfig
+  namespace: nextcloud
+data:
+  setup.sh: |
+    #!/bin/bash
+    until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
+      echo 'waiting for nextcloud to start...'
+      sleep 5
+    done
+    echo 'nextcloud is up.'
+    echo 'installing apps...'
+    for APP in $(cat apps.txt); do
+      echo "installing $APP"
+      sudo -u www-data php occ app:install $APP
+    done
+    echo 'installing apps... done'
+    echo 'loading config.json...'
+    sudo -u www-data php occ config:import config.json
+    echo 'loading config.json... done'
+    echo 'nextcloud all set up.'
+  apps.txt: | 
+    accessibility
+    activity
+    appointments
+    apporder
+    approval
+    bookmarks
+    breezedark
+    calendar
+    circles
+    collectives
+    comments
+    contacts
+    drawio
+    duplicatefinder
+    electronicsignatures
+    encryption
+    end_to_end_encryption
+    extract
+    federation
+    files_accesscontrol
+    files_automatedtagging
+    files_external
+    files_fulltextsearch
+    files_linkeditor
+    files_lock
+    files_pdfviewer
+    files_rightclick
+    files_sharing
+    files_trackdownloads
+    files_trashbin
+    files_versions
+    files_videoplayer
+    forms
+    fulltextsearch
+    fulltextsearch_elasticsearch
+    groupfolders
+    impersonate
+    logreader
+    mail
+    metadata
+    notifications
+    occweb
+    oidc_login
+    onlyoffice
+    passwords
+    photos
+    polls
+    privacy
+    recognize
+    recommendations
+    rocketchat_nextcloud
+    sharebymail
+    shifts
+    systemtags
+    tasks
+    text
+    theming
+    twofactor_totp
+    unsplash
+    user_ldap
+    user_status
+    webhooks
+  config.json: |
+    {
+      "apps": {
+        "user_ldap": {
+          "ldap_base": {{ include "dn.base" . | quote }},
+          "ldap_base_groups": {{ include "dn.groups" . | quote }},
+          "ldap_base_users": {{ include "dn.users" . | quote }},
+          "ldap_cache_ttl": "600",
+          "ldap_configuration_active": "1",
+          "ldap_display_name": "displayname",
+          "ldap_email_attr": "mail",
+          "ldap_expert_username_attr": "uid",
+          "ldap_group_display_name": "cn",
+          "ldap_group_filter": "(&(objectclass=groupOfNames))",
+          "ldap_group_filter_mode": "0",
+          "ldap_groupfilter_objectclass": "groupOfNames",
+          "ldap_group_member_assoc_attribute": "member",
+          "ldap_host": "openldap.civi-sso.svc.cluster.local",
+          "ldap_login_filter": "(&(|(objectclass=inetOrgPerson))(uid=%uid))",
+          "ldap_login_filter_mode": "0",
+          "ldap_port": "389",
+          "ldap_quota_attr": "userquota",
+          "ldap_tls": "0",
+          "ldap_user_display_name": "cn",
+          "ldap_user_filter_mode": "0",
+          "ldap_userfilter_objectclass": "inetOrgPerson",
+          "ldap_userlist_filter": "objectclass=inetOrgPerson",
+        },
+        "onlyoffice": {
+          "DocumentServerUrl": "",
+          "jwt_secret": "",
+        },
+      }
+    }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nextcloud-db
+  namespace: nextcloud
+type: Opaque
+data:
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: nextcloud
+  namespace: nextcloud
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: nextcloud
+      version: '2.14.3'
+      sourceRef:
+        kind: HelmRepository
+        name: nextcloud
+        namespace: flux-system
+  timeout: 10m0s # Increase timeout to be sure.
+  dependsOn:
+    - name: openldap
+      namespace: civi-sso
+    - name: keycloak
+      namespace: civi-sso
+  values:
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+    nextcloud:
+      host: {{ printf "%s.%s" .Values.subdomains.nextcloud .Values.domain }}
+      username: admin
+      password: {{ .Values.admin.password }}
+      mail:
+        enabled: true
+        fromAddress: {{ .Values.smtp.senderAddress }}
+        domain: {{ .Values.domain }}
+        smtp:
+          host: {{ .Values.smtp.host }}
+          port: {{ .Values.smtp.port }}
+          secure: {{ if .Values.smtp.tlsMode eq "ssl/tls" -}}
+            "ssl"
+            {{- else -}}
+            "starttls"
+          {{- end }}
+          name: {{ .Values.smtp.login }}
+          password: {{ .Values.smtp.password }}
+      configs:
+        oidc.config.php: | 
+          $CONFIG = array (
+            // See here for explanation: https://github.com/pulsejet/nextcloud-oidc-login#config
+            'allow_user_to_change_display_name' => false,
+            'lost_password_link' => 'disabled',
+            'oidc_login_provider_url' => {{ include "urls.idp_realm" . | quote }},
+            'oidc_login_client_id' => {{ include "names.oidc_client" . | quote }},
+            'oidc_login_client_secret' => {{ include "secrets.oidc_client" . | quote }},
+            'oidc_login_auto_redirect' => true,
+            'oidc_login_end_session_redirect' => false,
+            'oidc_login_default_quota' => '1000000000',
+            'oidc_login_button_text' => 'Log in with OpenID',
+            'oidc_login_hide_password_form' => false,
+            'oidc_login_use_id_token' => false,
+            'oidc_login_attributes' => array (
+                'id' => 'sub',
+                'name' => 'name',
+                'mail' => 'email',
+                'quota' => 'ownCloudQuota',
+                'home' => 'homeDirectory',
+                'ldap_uid' => 'uid',
+                'groups' => 'ownCloudGroups',
+                'photoURL' => 'picture',
+                'is_admin' => 'ownCloudAdmin',
+            ),
+            'oidc_login_default_group' => 'oidc',
+            'oidc_login_use_external_storage' => false,
+            'oidc_login_scope' => 'openid profile groups email',
+            'oidc_login_proxy_ldap' => false,
+            'oidc_login_disable_registration' => false,
+            'oidc_login_redir_fallback' => false,
+            'oidc_login_tls_verify' => true,
+            'oidc_create_groups' => true
+          );
+        locale.config.php: | 
+          $CONFIG = array (
+            'default_locale' => {{ .Values.org.defaultLocale | quote }},
+          );
+      extraVolumes:
+        - name: autoconfig
+          configMap:
+            name: nextcloud-autoconfig
+      extraVolumeMounts:
+        - name: autoconfig
+          mountPath: /autoconfig
+          readOnly: true
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+    internalDatabase:
+      enabled: false
+    externalDatabase:
+      enabled: true
+      type: mysql
+      host: {{ printf "%s.%s.svc.cluster.local" "nextcloud-db" "nextcloud" }}
+      user: nextcloud
+      existingSecret:
+        enabled: true
+        secretName: nextcloud-db
+        # usernameKey: username
+        passwordKey: mariadb-password
+    mariadb:
+      enabled: true
+      fullnameOverride: nextcloud-db
+      auth:
+        database: nextcloud
+        username: nextcloud
+        existingSecret: nextcloud-db
+      primary:
+        persistence:
+          enabled: true
+    cronjob:
+      enabled: true
+    persistence:
+      enabled: true

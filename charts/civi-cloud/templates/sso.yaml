@@ -89,6 +89,9 @@
 {{ derivePassword 1 "maximum" .Values.secretSeed "keycloak-management" .Values.domain | b64enc }}
 {{- end -}}
 
+{{- define "dn.base" -}}
+{{ printf "dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
+{{- end -}}
 {{- define "dn.users" -}}
 {{ printf "ou=users,dc=%s" (.Values.domain | splitList "." | join ",dc=") }}
 {{- end -}}
