@@ -33,6 +33,7 @@ data:
     advanced-custom-fields
     broken-link-checker
     contact-form-7
+    doliconnect
     duplicate-page
     gutenberg
     matomo
@@ -40,6 +41,7 @@ data:
     permalink-manager
     super-progressive-web-apps
     wordpress-seo
+    wp-discourse
     wp-phpmyadmin-extension
     wp-smushit
     https://github.com/frontity/frontity-embedded/archive/refs/heads/master.zip
