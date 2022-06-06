@@ -1,0 +1,80 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: homer
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: homer
+  namespace: homer
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: homer
+      version: '7.2.2'
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-at-home
+        namespace: flux-system
+  dependsOn:
+    - name: oauth2-proxy
+      namespace: civi-sso
+  values:
+    ingress:
+      main:
+        {{- $host := printf "%s.%s" .Values.subdomains.homer .Values.domain -}}
+        {{- $url := printf "https://%s" $host -}}
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: acme
+          nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+          nginx.ingress.kubernetes.io/auth-signin: {{ printf "%s?rd=%s" (include "urls.authproxy_login" .) (urlquery $url) }}
+          nginx.ingress.kubernetes.io/auth-url: {{ include "urls.authproxy_check" . }}
+        hosts:
+          - host: {{ $host }}
+            paths:
+              - path: /
+                pathType: ImplementationSpecific
+        tls:
+          - hosts:
+              - {{ $host }}
+            secretName: homer-cert
+    persistence:
+      config:
+        enabled: true
+    configmap:
+      config:
+        enabled: true
+        data:
+          config.yml: |
+            title: {{ .Values.org.name | quote }}
+            subtitle: "Cloud Homepage"
+            logo: {{ .Values.org.logoURL }}
+            connectivityCheck: true
+            proxy:
+              useCredentials: true
+            services:
+              - name: "Main Apps"
+                icon: "fas fa-code-branch"
+                items:
+                  - name: "Dolibarr"
+                    logo: https://upload.wikimedia.org/wikipedia/commons/6/67/Dolibarr_logo.png
+                    tag: app
+                    keywords: "members accounting projects tasks issues CRM mail"
+                    url: {{ printf "https://%s.%s" .Values.subdomains.dolibarr .Values.domain }}
+                    target: _blank
+                  - name: "Nextcloud"
+                    logo: https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg
+                    tag: app
+                    keywords: "files documents calendar contacts tasks mail polls forms"
+                    url: {{ printf "https://%s.%s" .Values.subdomains.nextcloud .Values.domain }}
+                    target: _blank
+                  - name: "Wordpress"
+                    logo: https://upload.wikimedia.org/wikipedia/commons/2/20/WordPress_logo.svg
+                    tag: app
+                    keywords: "website blog"
+                    url: {{ printf "https://%s.%s" .Values.subdomains.wordpress .Values.domain }}
+                    target: _blank
+                  
