@@ -155,7 +155,7 @@ spec:
   dependsOn:
     - name: openldap
       namespace: civi-sso
-    - name: keycloak
+    - name: keycloak-config
       namespace: civi-sso
   values:
     ingress:

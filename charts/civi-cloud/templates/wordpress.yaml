@@ -74,7 +74,7 @@ spec:
         namespace: flux-system
   timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
-    - name: keycloak
+    - name: keycloak-config
       namespace: civi-sso
   values:
     ingress:
