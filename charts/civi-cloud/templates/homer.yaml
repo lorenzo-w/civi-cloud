@@ -77,4 +77,16 @@ spec:
                     keywords: "website blog"
                     url: {{ printf "https://%s.%s" .Values.subdomains.wordpress .Values.domain }}
                     target: _blank
+                  - name: "Jitsi"
+                    logo: https://upload.wikimedia.org/wikipedia/commons/5/5d/Logo_Jitsi.svg
+                    tag: app
+                    keywords: "videochat conferencing meeting"
+                    url: {{ printf "https://%s.%s" .Values.subdomains.jitsi .Values.domain }}
+                    target: _blank
+                  - name: "Discourse"
+                    logo: https://upload.wikimedia.org/wikipedia/commons/c/cf/Discourse_logo.svg
+                    tag: app
+                    keywords: "forum discussion community"
+                    url: {{ printf "https://%s.%s" .Values.subdomains.discourse .Values.domain }}
+                    target: _blank
                   
