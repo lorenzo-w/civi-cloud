@@ -1,0 +1,122 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: wordpress
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: wordpress-autoconfig
+  namespace: wordpress
+data:
+  setup.sh: |
+    #!/bin/bash
+    until $(curl --output /dev/null --silent --head --fail http://localhost:8080/wp-login.php); do
+      echo 'waiting for wordpress to start...'
+      sleep 5
+    done
+    echo 'wordpress is up.'
+    echo 'installing plugins...'
+    for PLUGIN in $(cat plugins.txt); do
+      echo "installing $PLUGIN"
+      wp plugin install $PLUGIN --activate
+    done
+    echo 'installing plugins... done'
+    echo 'loading options...'
+    mapfile OPTIONS < options.txt
+    for OPTION in $OPTIONS; do
+      wp option update $OPTION
+    done
+    echo 'loading options... done'
+    echo 'wordpress all set up.'
+  plugins.txt: | 
+    advanced-custom-fields
+    broken-link-checker
+    contact-form-7
+    duplicate-page
+    gutenberg
+    matomo
+    miniorange-saml-20-single-sign-on
+    permalink-manager
+    super-progressive-web-apps
+    wordpress-seo
+    wp-phpmyadmin-extension
+    wp-smushit
+    https://github.com/frontity/frontity-embedded/archive/refs/heads/master.zip
+  options.txt: |
+    saml_identity_name Test
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-db
+  namespace: wordpress
+type: Opaque
+data:
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: wordpress
+  namespace: wordpress
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: wordpress
+      version: '14.3.2'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  timeout: 10m0s # Increase timeout to be sure.
+  dependsOn:
+    - name: keycloak
+      namespace: civi-sso
+  values:
+    ingress:
+      enabled: true
+      hostname: {{ printf "%s.%s" .Values.subdomains.wordpress .Values.domain }}
+      tls: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+    wordpressUsername: admin
+    wordpressPassword: {{ .Values.admin.password | quote }}
+    wordpressEmail: {{ .Values.admin.email | quote }}
+    wordpressBlogName: {{ .Values.org.name | quote }}
+    wordpressScheme: https
+    wordpressExtraConfigContent: | 
+      define( 'WPLANG', {{ .Values.org.defaultLocale | quote }} );
+    wordpressConfigureCache: true
+    extraVolumes:
+      - name: autoconfig
+        configMap:
+          name: wordpress-autoconfig
+    extraVolumeMounts:
+      - name: autoconfig
+        mountPath: /autoconfig
+        readOnly: true
+    customPostInitScripts:
+      autoconfig.sh: |
+        #!/bin/bash
+        cd /autoconfig
+        ./setup.sh
+    smtpHost: {{ .Values.smtp.host }}
+    smtpPort: {{ .Values.smtp.port | quote }}
+    smtpUser: {{ .Values.smtp.user | quote }}
+    smtpPassword: {{ .Values.smtp.password | quote }}
+    smtpProtocol: {{ .Values.smtp.tlsMode | quote }}
+    service:
+      type: ClusterIP
+    mariadb:
+      enabled: true
+      fullnameOverride: wordpress-db
+      auth:
+        database: wordpress
+        username: wordpress
+        existingSecret: wordpress-db
+    memcached:
+      enabled: true
