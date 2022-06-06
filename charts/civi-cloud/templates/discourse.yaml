@@ -1,0 +1,111 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: discourse
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: discourse-autoconfig
+  namespace: discourse
+data:
+  setup.sh: |
+    #!/bin/bash
+    until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
+      echo 'waiting for discourse to start...'
+      sleep 5
+    done
+    echo 'discourse is up.'
+
+    echo 'installing plugins...'
+    # See: https://github.com/bitnami/charts/issues/4624#issuecomment-740565085
+    cd /opt/bitnami/discourse
+    for PLUGIN in $(cat plugins.txt); do
+      RAILS_ENV=production bundle exec rake plugin:install repo=$PLUGIN
+      RAILS_ENV=production bundle exec rake assets:precompile
+    done
+    echo 'installing plugins... done'
+
+    echo 'discourse all set up.'
+  plugins.txt: | 
+    https://github.com/discourse/discourse-saml.git
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: discourse
+  namespace: discourse
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: discourse
+      version: '7.3.2'
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  dependsOn:
+    - name: keycloak-config
+      namespace: civi-sso
+  values:
+    {{- $host := printf "%s.%s" .Values.subdomains.discourse .Values.domain -}}
+    ingress:
+      enabled: true
+      hostname: {{ $host }}
+      tls: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+    auth:
+      username: admin
+      email: {{ .Values.admin.email | quote }}
+      password: {{ .Values.admin.password | quote }}
+    host: {{ $host }}
+    siteName: {{ .Values.org.name | quote }}
+    smtp:
+      enabled: true
+      host: {{ .Values.smtp.host }}
+      port: {{ .Values.smtp.port | quote }}
+      user: {{ .Values.smtp.login | quote }}
+      password: {{ .Values.smtp.password | quote }}
+      protocol: {{ .Values.smtp.tlsMode | quote }}
+      auth: ""
+    extraVolumes:
+      - name: autoconfig
+        configMap:
+          name: discourse-autoconfig
+    extraVolumeMounts:
+      - name: autoconfig
+        mountPath: /autoconfig
+        readOnly: true
+    discourse:
+      lifecycleHooks:
+        postStart:
+          exec:
+            command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+      extraEnvVars:
+        # See: https://github.com/discourse/discourse-saml#configuration
+        - name: DISCOURSE_SAML_TARGET_URL
+          value: ""
+        - name: DISCOURSE_SAML_CERT_FINGERPRINT
+          value: ""
+        - name: DISCOURSE_SAML_REQUEST_METHOD
+          value: ""
+        - name: DISCOURSE_SAML_FULL_SCREEN_LOGIN
+          value: ""
+        - name: DISCOURSE_SAML_CERT
+          value: ""
+        - name: DISCOURSE_SAML_SYNC_GROUPS
+          value: "true"
+        - name: DISCOURSE_SAML_GROUPS_ATTRIBUTE
+          value: "memberOf"
+        - name: DISCOURSE_SAML_BUTTON_TITLE
+          value: "SAML Login"
+        - name: DISCOURSE_SAML_SYNC_MODERATOR
+          value: "true"
+        - name: DISCOURSE_SAML_MODERATOR_ATTRIBUTE
+          value: "isModerator"
+        - name: DISCOURSE_SAML_SYNC_ADMIN
+          value: "true"
+        - name: DISCOURSE_SAML_ADMIN_ATTRIBUTE
+          value: "isAdmin"
