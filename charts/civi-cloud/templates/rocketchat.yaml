@@ -1,0 +1,87 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: rocketchat
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: rocketchat
+  namespace: rocketchat
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: rocketchat
+      version: '4.7.4'
+      sourceRef:
+        kind: HelmRepository
+        name: rocketchat-server
+        namespace: flux-system
+  dependsOn:
+    - name: openldap
+      namespace: civi-sso
+    - name: keycloak-config
+      namespace: civi-sso
+  values:
+    {{- $host := printf "%s.%s" .Values.subdomains.rocketchat .Values.domain -}}
+    host: {{ $host }}
+    smtp:
+      enabled: true
+      username: {{ .Values.smtp.login | quote }}
+      password: {{ .Values.smtp.password | quote }}
+      host: {{ .Values.smtp.host }}
+      port: {{ .Values.smtp.port }}
+    persistence:
+      enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: acme
+      tls:
+        - hosts:
+            - {{ $host }}
+          secretName: rocketchat-cert
+    extraEnv:
+      - name: OVERWRITE_SETTING_LDAP_Enable
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_Server_Type
+        value: "Other"
+      - name: OVERWRITE_SETTING_LDAP_Host
+        value: openldap.civi-sso.svc.cluster.local
+      - name: OVERWRITE_SETTING_LDAP_Port
+        value: "389"
+      - name: OVERWRITE_SETTING_LDAP_Reconnect
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_Login_Fallback
+        value: "false"
+      - name: OVERWRITE_SETTING_LDAP_Authentication
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_Authentication_UserDN
+        value: {{ include "names.ldap_admin_dn" . | quote }}
+      - name: OVERWRITE_SETTING_LDAP_Authentication_Password
+        value: {{ include "secrets.ldap_admin_pw" . | quote }}
+      - name: OVERWRITE_SETTING_LDAP_Find_User_After_Login
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_BaseDN
+        value: {{ include "dn.users" . | quote }}
+      - name: OVERWRITE_SETTING_LDAP_User_Search_Field
+        value: "uid"
+      - name: OVERWRITE_SETTING_LDAP_Merge_Existing_Users
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_Update_Data_On_Login
+        value: "true"
+      - name: OVERWRITE_SETTING_LDAP_Username_Field
+        value: "uid"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default
+        value: "true"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_provider
+        value: ""
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_entry_point
+        value: ""
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_idp_slo_redirect_url
+        value: ""
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_issuer
+        value: ""
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_button_label_text
+        value: "SAML Login"
