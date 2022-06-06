@@ -1,0 +1,43 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: jitsi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: jitsi
+  namespace: jitsi
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: jitsi
+      version: '1.2.2'
+      sourceRef:
+        kind: HelmRepository
+        name: jitsi
+        namespace: flux-system
+  values:
+    {{- $host := printf "%s.%s" .Values.subdomains.jitsi .Values.domain -}}
+    {{- $url := printf "https://%s" $host -}}
+    publicURL: {{ $url }}
+    web:
+      ingress:
+        enabled: true
+        annotations:
+          cert-manager.io/cluster-issuer: acme
+        hosts:
+        - host: {{ $host }}
+          paths: ['/']
+        tls:
+          - hosts:
+              - {{ $host }}
+            secretName: jitsi-cert
+    jvb:
+      useHostPort: true
+      useNodeIP: true
+    jibri:
+      enabled: true
+      persistence:
+        enabled: true
