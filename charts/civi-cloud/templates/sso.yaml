@@ -482,9 +482,9 @@ spec:
               clientAuthenticatorType: client-secret
               secret: {{ include "secrets.oidc_client" . | quote }}
               redirectUris: 
-                - "*"
+                - {{ printf "https://*.%s/*" .Values.domain }}
               webOrigins: 
-                - "*"
+                - {{ printf "https://*.%s/*" .Values.domain }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
