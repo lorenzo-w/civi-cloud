@@ -62,12 +62,13 @@ Params:
 Generate secret password or retrieve one if already created.
 
 Usage:
-{{ include "common.secrets.passwords.manage" (dict "secret" "secret-name" "key" "keyName" "providedValues" (list "path.to.password1" "path.to.password2") "length" 10 "strong" false "chartName" "chartName" "context" $) }}
+{{ include "common.secrets.passwords.manage" (dict "secret" "secret-name" "key" "keyName" "providedValues" (list "path.to.password1" "path.to.password2") "namespace" "my-namespace" "length" 10 "strong" false "chartName" "chartName" "context" $) }}
 
 Params:
   - secret - String - Required - Name of the 'Secret' resource where the password is stored.
   - key - String - Required - Name of the key in the secret.
   - providedValues - List<String> - Required - The path to the validating value in the values.yaml, e.g: "mysql.password". Will pick first parameter with a defined value.
+  - namespace - String - Required - Namespace of the secret.
   - length - int - Optional - Length of the generated random password.
   - strong - Boolean - Optional - Whether to add symbols to the generated random password.
   - chartName - String - Optional - Name of the chart used when said chart is deployed as a subchart.
@@ -90,7 +91,7 @@ The order in which this function returns a secret password:
 {{- $passwordLength := default 10 .length }}
 {{- $providedPasswordKey := include "common.utils.getKeyFromList" (dict "keys" .providedValues "context" $.context) }}
 {{- $providedPasswordValue := include "common.utils.getValueFromKey" (dict "key" $providedPasswordKey "context" $.context) }}
-{{- $secretData := (lookup "v1" "Secret" $.context.Release.Namespace .secret).data }}
+{{- $secretData := (lookup "v1" "Secret" .namespace .secret).data }}
 {{- if $secretData }}
   {{- if hasKey $secretData .key }}
     {{- $password = index $secretData .key }}
@@ -126,14 +127,15 @@ The order in which this function returns a secret password:
 Returns whether a previous generated secret already exists
 
 Usage:
-{{ include "common.secrets.exists" (dict "secret" "secret-name" "context" $) }}
+{{ include "common.secrets.exists" (dict "secret" "secret-name" "namespace" "my-namespace" "context" $) }}
 
 Params:
   - secret - String - Required - Name of the 'Secret' resource where the password is stored.
+  - namespace - String - Required - Namespace of the 'Secret' resource.
   - context - Context - Required - Parent context.
 */}}
 {{- define "common.secrets.exists" -}}
-{{- $secret := (lookup "v1" "Secret" $.context.Release.Namespace .secret) }}
+{{- $secret := (lookup "v1" "Secret" $.namespace .secret) }}
 {{- if $secret }}
   {{- true -}}
 {{- end -}}

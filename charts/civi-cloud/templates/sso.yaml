@@ -7,6 +7,9 @@
 {{- define "urls.idp_realm" -}}
 {{ printf "https://%s/realms/master" (include "hosts.idp" .) }}
 {{- end -}}
+{{- define "urls.idp_saml_entrypoint" -}}
+{{ printf "%s/protocol/saml" (include "urls.idp_realm" .) }}
+{{- end -}}
 
 {{- define "urls.admin_oidc_callback" -}}
 {{ printf "https://%s/realms/master/broker/admin-oidc/endpoint" (include "hosts.idp" .) }}
@@ -53,7 +56,7 @@
 {{- end -}}
 
 {{- define "names.oidc_client" -}}
-{{ "local" }}
+{{ "local-oidc" }}
 {{- end -}}
 {{- define "secrets.oidc_client" -}}
 {{ derivePassword 1 "maximum" .Values.secretSeed "local-oidc-client" .Values.domain | b64enc }}
@@ -64,6 +67,10 @@
 {{- end -}}
 {{- define "secrets.admin_oidc_client" -}}
 {{ derivePassword 1 "maximum" .Values.secretSeed "admin-oidc-client" .Values.domain | b64enc }}
+{{- end -}}
+
+{{- define "names.saml_client" -}}
+{{ "local-saml" }}
 {{- end -}}
 
 {{- define "names.ldap_admin_dn" -}}
@@ -107,6 +114,22 @@ apiVersion: v1
 metadata:
   name: civi-sso
 ---
+{{- if ! (include "common.secrets.exists" (dict "secret" "keycloak-certs" "namespace" "civi-sso" "context" $)) -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-certs
+  namespace: civi-sso
+type: Opaque
+data:
+  {{- $realm_cert := genSelfSignedCert .Values.domain nil nil 3650 -}}
+  realm.crt: {{ $realm_cert.Cert | b64enc }}
+  realm.key: {{ $realm_cert.Key | b64enc }}
+  {{- $saml_cert := genSelfSignedCert .Values.domain nil nil 3650 -}}
+  saml-client.crt: {{ $saml_cert.Cert | b64enc }}
+  saml-client.key: {{ $saml_cert.Key | b64enc }}
+---
+{{- end -}}
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -215,6 +238,8 @@ spec:
         name: jkroepke
         namespace: flux-system
   dependsOn:
+    - name: selfsigned-ca
+      namespace: civi-sso
     - name: keycloak
       namespace: civi-sso
   values:
@@ -226,12 +251,37 @@ spec:
       IMPORT_FILES_LOCATIONS: "/config/master.json"
     secrets:
       KEYCLOAK_PASSWORD: {{ include "secrets.keycloak_admin_pw" . }}
-    config:
+    config: 
       master:
         inline:
           enabled: true
           realm: master
           components:
+            org.keycloak.keys.KeyProvider:
+              - name: "rsa-generated"
+                providerId: "rsa-generated"
+                subComponents: {}
+                config: 
+                  privateKey: [""]
+                  certificate: [""] 
+                  priority: ["100"] 
+              - name: "aes-generated"
+                providerId: "aes-generated"
+                subComponents: {}
+                config: 
+                  priority: ["100"]
+              - name: "rsa-enc-generated"
+                providerId: "rsa-enc-generated"
+                subComponents: 
+                config: 
+                  priority: ["100"]
+                  algorithm: ["RSA-OAEP"]
+              - name: "hmac-generated"
+                providerId: "hmac-generated"
+                subComponents: 
+                config: 
+                  priority: ["100"]
+                  algorithm: ["HS256"]
             org.keycloak.storage.UserStorageProvider:
               - id: ldap
                 name: ldap
@@ -485,6 +535,47 @@ spec:
                 - {{ printf "https://*.%s/*" .Values.domain }}
               webOrigins: 
                 - {{ printf "https://*.%s/*" .Values.domain }}
+            - clientId: {{ include "names.saml_client" . | quote }}
+              name: {{ printf "%s-saml-client" .Values.domain }}
+              description: {{ printf "SSO for %s" .Values.domain | quote }}
+              enabled: true
+              redirectUris: 
+                - {{ printf "https://*.%s/*" .Values.domain }}
+              webOrigins: 
+                - {{ printf "https://*.%s/*" .Values.domain }}
+              frontchannelLogout: true
+              protocol: saml
+              attributes:
+                saml.force.post.binding: "true"
+                saml.signing.certificate: ""
+                saml.signature.algorithm: RSA_SHA256
+                saml_name_id_format: email
+                saml.signing.private.key: ""
+              protocolMappers:
+                - name: firstName
+                  protocol: saml
+                  protocolMapper: saml-user-attribute-mapper
+                  config:
+                    attribute.nameformat: Basic
+                    user.attribute: firstName
+                    attribute.name: cn
+  valuesFrom:
+    - kind: Secret
+      name: keycloak-certs
+      valuesKey: realm.crt
+      targetPath: "config.master.inline.components.org\.keycloak\.keys\.KeyProvider[0].config.certificate[0]"
+    - kind: Secret
+      name: keycloak-certs
+      valuesKey: realm.key
+      targetPath: "config.master.inline.components.org\.keycloak\.keys\.KeyProvider[0].config.privateKey[0]"
+    - kind: Secret
+      name: keycloak-certs
+      valuesKey: saml-client.crt
+      targetPath: "config.master.inline.clients[1].attributes.saml\.signing\.certificate"
+    - kind: Secret
+      name: keycloak-certs
+      valuesKey: saml-client.key
+      targetPath: "config.master.inline.clients[1].attributes.saml\.signing\.private\.key"
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease

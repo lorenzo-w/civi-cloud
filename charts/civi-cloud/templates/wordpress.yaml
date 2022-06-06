@@ -55,9 +55,9 @@ metadata:
   namespace: wordpress
 type: Opaque
 data:
-  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "context" $) }}
-  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
-  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease

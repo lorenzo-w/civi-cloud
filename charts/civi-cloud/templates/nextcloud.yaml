@@ -132,9 +132,9 @@ metadata:
   namespace: nextcloud
 type: Opaque
 data:
-  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "context" $) }}
-  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
-  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
 ---
 apiVersion: v1
 kind: Secret
@@ -143,7 +143,7 @@ metadata:
   namespace: nextcloud
 type: Opaque
 data:
-  jwt-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-onlyoffice" "key" "jwt-secret" "providedValues" (list "") "context" $) }}
+  jwt-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-onlyoffice" "key" "jwt-secret" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -286,5 +286,5 @@ spec:
       namespace: nextcloud
   values:
     onlyoffice:
-      jwt_secret_name: {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data["jwt-secret"] | b64dec | quote }}
+      jwt_secret_name: {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data | index "jwt-secret" | b64dec | quote }}
     org: {{ .Values.org | toYaml | nindent 6 }}

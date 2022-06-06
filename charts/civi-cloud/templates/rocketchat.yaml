@@ -76,12 +76,18 @@ spec:
       - name: OVERWRITE_SETTING_SAML_Custom_Default
         value: "true"
       - name: OVERWRITE_SETTING_SAML_Custom_Default_provider
-        value: ""
+        value: "keycloak"
       - name: OVERWRITE_SETTING_SAML_Custom_Default_entry_point
-        value: ""
+        value: {{ include "urls.idp_saml_entrypoint" . }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_idp_slo_redirect_url
-        value: ""
+        value: {{ include "urls.idp_saml_entrypoint" . }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_issuer
-        value: ""
+        value: {{ printf "https://%s/_saml/metadata/keycloak" $host }}
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_cert
+        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "realm.crt" | b64dec | quote }}
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_public_cert
+        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "saml-client.crt" | b64dec | quote }}
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_private_key
+        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "saml-client.key" | b64dec | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_button_label_text
         value: "SAML Login"
