@@ -119,8 +119,8 @@ data:
           "ldap_userlist_filter": "objectclass=inetOrgPerson",
         },
         "onlyoffice": {
-          "DocumentServerUrl": "",
-          "jwt_secret": "",
+          "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local",
+          "jwt_secret": {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data["jwt-secret"] | b64dec | quote }},
         },
       }
     }
@@ -135,6 +135,15 @@ data:
   mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "context" $) }}
   mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
   mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nextcloud-onlyoffice
+  namespace: nextcloud
+type: Opaque
+data:
+  jwt-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-onlyoffice" "key" "jwt-secret" "providedValues" (list "") "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -257,3 +266,25 @@ spec:
       enabled: true
     persistence:
       enabled: true
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: onlyoffice
+  namespace: onlyoffice
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./charts/onlyoffice
+      sourceRef:
+        kind: GitRepository
+        name: civi-cloud
+        namespace: flux-system
+  dependsOn:
+    - name: nextcloud
+      namespace: nextcloud
+  values:
+    onlyoffice:
+      jwt_secret_name: {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data["jwt-secret"] | b64dec | quote }}
+    org: {{ .Values.org | toYaml | nindent 6 }}
