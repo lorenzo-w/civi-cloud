@@ -1,63 +1,3 @@
-{{/* vim: set filetype=mustache: */}}
-{{/*
-Generate secret name.
-
-Usage:
-{{ include "common.secrets.name" (dict "existingSecret" .Values.path.to.the.existingSecret "defaultNameSuffix" "mySuffix" "context" $) }}
-
-Params:
-  - existingSecret - ExistingSecret/String - Optional. The path to the existing secrets in the values.yaml given by the user
-    to be used instead of the default one. Allows for it to be of type String (just the secret name) for backwards compatibility.
-    +info: https://github.com/bitnami/charts/tree/master/bitnami/common#existingsecret
-  - defaultNameSuffix - String - Optional. It is used only if we have several secrets in the same deployment.
-  - context - Dict - Required. The context for the template evaluation.
-*/}}
-{{- define "common.secrets.name" -}}
-{{- $name := (include "common.names.fullname" .context) -}}
-
-{{- if .defaultNameSuffix -}}
-{{- $name = printf "%s-%s" $name .defaultNameSuffix | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{- with .existingSecret -}}
-{{- if not (typeIs "string" .) -}}
-{{- with .name -}}
-{{- $name = . -}}
-{{- end -}}
-{{- else -}}
-{{- $name = . -}}
-{{- end -}}
-{{- end -}}
-
-{{- printf "%s" $name -}}
-{{- end -}}
-
-{{/*
-Generate secret key.
-
-Usage:
-{{ include "common.secrets.key" (dict "existingSecret" .Values.path.to.the.existingSecret "key" "keyName") }}
-
-Params:
-  - existingSecret - ExistingSecret/String - Optional. The path to the existing secrets in the values.yaml given by the user
-    to be used instead of the default one. Allows for it to be of type String (just the secret name) for backwards compatibility.
-    +info: https://github.com/bitnami/charts/tree/master/bitnami/common#existingsecret
-  - key - String - Required. Name of the key in the secret.
-*/}}
-{{- define "common.secrets.key" -}}
-{{- $key := .key -}}
-
-{{- if .existingSecret -}}
-  {{- if not (typeIs "string" .existingSecret) -}}
-    {{- if .existingSecret.keyMapping -}}
-      {{- $key = index .existingSecret.keyMapping $.key -}}
-    {{- end -}}
-  {{- end }}
-{{- end -}}
-
-{{- printf "%s" $key -}}
-{{- end -}}
-
 {{/*
 Generate secret password or retrieve one if already created.
 
@@ -83,7 +23,7 @@ The order in which this function returns a secret password:
      (A new random secret password with the length specified in the 'length' parameter will be generated and returned)
 
 */}}
-{{- define "common.secrets.passwords.manage" -}}
+{{- define "civi_cloud.secrets.retrieve" -}}
 
 {{- $password := "" }}
 {{- $subchart := "" }}
@@ -134,9 +74,26 @@ Params:
   - namespace - String - Required - Namespace of the 'Secret' resource.
   - context - Context - Required - Parent context.
 */}}
-{{- define "common.secrets.exists" -}}
-{{- $secret := (lookup "v1" "Secret" $.namespace .secret) }}
+{{- define "civi_cloud.secrets.exists" -}}
+{{- $secret := (lookup "v1" "Secret" .namespace .secret) }}
 {{- if $secret }}
   {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Returns a value from the SSO secret given a key
+
+Usage:
+{{ include "civi_cloud.sso" (dict "key" "key-name" "context" $) }}
+
+Params:
+  - key - String - Required - Key of the value to retrieve.
+  - context - Context - Required - Parent context.
+*/}}
+{{- define "civi_cloud.sso" -}}
+{{- $secret := (lookup "v1" "Secret" .Values.ssoConfig.namespace .Values.ssoConfig.secretName) }}
+{{- if $secret }}
+  {{- $secret.data | index .key | b64dec -}}
 {{- end -}}
 {{- end -}}

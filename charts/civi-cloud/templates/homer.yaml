@@ -18,9 +18,6 @@ spec:
         kind: HelmRepository
         name: k8s-at-home
         namespace: flux-system
-  dependsOn:
-    - name: oauth2-proxy
-      namespace: civi-sso
   values:
     ingress:
       main:
@@ -29,9 +26,6 @@ spec:
         enabled: true
         annotations:
           cert-manager.io/cluster-issuer: acme
-          nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-          nginx.ingress.kubernetes.io/auth-signin: {{ printf "%s?rd=%s" (include "urls.authproxy_login" .) (urlquery $url) }}
-          nginx.ingress.kubernetes.io/auth-url: {{ include "urls.authproxy_check" . }}
         hosts:
           - host: {{ $host }}
             paths:

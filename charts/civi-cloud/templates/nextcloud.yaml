@@ -1,4 +1,5 @@
 {{- $host := printf "%s.%s" .Values.subdomains.nextcloud .Values.domain -}}
+
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -94,33 +95,32 @@ data:
     {
       "apps": {
         "user_ldap": {
-          "ldap_base": {{ include "dn.base" . | quote }},
-          "ldap_base_groups": {{ include "dn.groups" . | quote }},
-          "ldap_base_users": {{ include "dn.users" . | quote }},
+          "ldap_base": {{ include "civi_cloud.sso" (dict "key" "ldap_base_dn" "context" $) | quote }},
+          "ldap_base_groups": {{ include "civi_cloud.sso" (dict "key" "ldap_groupd_dn" "context" $) | quote }},
+          "ldap_base_users": {{ include "civi_cloud.sso" (dict "key" "ldap_users_dn" "context" $) | quote }},
           "ldap_cache_ttl": "600",
           "ldap_configuration_active": "1",
           "ldap_display_name": "displayname",
           "ldap_email_attr": "mail",
           "ldap_expert_username_attr": "uid",
           "ldap_group_display_name": "cn",
-          "ldap_group_filter": "(&(objectclass=groupOfNames))",
+          "ldap_group_filter": {{ printf "(&(objectclass=%s))" (include "civi_cloud.sso" (dict "key" "ldap_groups_class" "context" $)) | quote }},
           "ldap_group_filter_mode": "0",
-          "ldap_groupfilter_objectclass": "groupOfNames",
+          "ldap_groupfilter_objectclass": {{ include "civi_cloud.sso" (dict "key" "ldap_groups_class" "context" $) | quote }},
           "ldap_group_member_assoc_attribute": "member",
-          "ldap_host": "openldap.civi-sso.svc.cluster.local",
+          "ldap_host": {{ include "civi_cloud.sso" (dict "key" "ldap_host" "context" $) | quote }},
           "ldap_login_filter": "(&(|(objectclass=inetOrgPerson))(uid=%uid))",
           "ldap_login_filter_mode": "0",
-          "ldap_port": "389",
+          "ldap_port": {{ include "civi_cloud.sso" (dict "key" "ldap_port" "context" $) | quote }},
           "ldap_quota_attr": "userquota",
           "ldap_tls": "0",
           "ldap_user_display_name": "cn",
           "ldap_user_filter_mode": "0",
-          "ldap_userfilter_objectclass": "inetOrgPerson",
-          "ldap_userlist_filter": "objectclass=inetOrgPerson",
+          "ldap_userfilter_objectclass": {{ include "civi_cloud.sso" (dict "key" "ldap_users_class" "context" $) | quote }},
+          "ldap_userlist_filter": {{ printf "objectclass=%s" (include "civi_cloud.sso" (dict "key" "ldap_users_class" "context" $)) | quote }}
         },
         "onlyoffice": {
-          "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local",
-          "jwt_secret": {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data["jwt-secret"] | b64dec | quote }},
+          "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local"
         },
       }
     }
@@ -132,18 +132,9 @@ metadata:
   namespace: nextcloud
 type: Opaque
 data:
-  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
-  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-root-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
-  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" .Values.mariadb.auth.existingSecret "key" "mariadb-replication-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: nextcloud-onlyoffice
-  namespace: nextcloud
-type: Opaque
-data:
-  jwt-secret: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-onlyoffice" "key" "jwt-secret" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
+  mariadb-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "nextcloud-db" "key" "mariadb-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
+  mariadb-root-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "nextcloud-db" "key" "mariadb-root-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
+  mariadb-replication-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "nextcloud-db" "key" "mariadb-replication-password" "providedValues" (list "") "namespace" "nextcloud" "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -195,9 +186,9 @@ spec:
             // See here for explanation: https://github.com/pulsejet/nextcloud-oidc-login#config
             'allow_user_to_change_display_name' => false,
             'lost_password_link' => 'disabled',
-            'oidc_login_provider_url' => {{ include "urls.idp_realm" . | quote }},
-            'oidc_login_client_id' => {{ include "names.oidc_client" . | quote }},
-            'oidc_login_client_secret' => {{ include "secrets.oidc_client" . | quote }},
+            'oidc_login_provider_url' => {{ include "civi_cloud.sso" (dict "key" "oidc_issuer_url" "context" $) | quote }},
+            'oidc_login_client_id' => {{ include "civi_cloud.sso" (dict "key" "oidc_client_id" "context" $) | quote }},
+            'oidc_login_client_secret' => {{ include "civi_cloud.sso" (dict "key" "oidc_client_secret" "context" $) | quote }},
             'oidc_login_auto_redirect' => true,
             'oidc_login_end_session_redirect' => false,
             'oidc_login_default_quota' => '1000000000',
@@ -284,7 +275,3 @@ spec:
   dependsOn:
     - name: nextcloud
       namespace: nextcloud
-  values:
-    onlyoffice:
-      jwt_secret_name: {{ (lookup "v1" "Secret" "nextcloud" "nextcloud-onlyoffice").data | index "jwt-secret" | b64dec | quote }}
-    org: {{ .Values.org | toYaml | nindent 6 }}

@@ -58,13 +58,13 @@ spec:
       - name: OVERWRITE_SETTING_LDAP_Authentication
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_Authentication_UserDN
-        value: {{ include "names.ldap_admin_dn" . | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_dn" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_Authentication_Password
-        value: {{ include "secrets.ldap_admin_pw" . | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_dn" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_Find_User_After_Login
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_BaseDN
-        value: {{ include "dn.users" . | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "ldap_users_dn" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_User_Search_Field
         value: "uid"
       - name: OVERWRITE_SETTING_LDAP_Merge_Existing_Users
@@ -76,18 +76,18 @@ spec:
       - name: OVERWRITE_SETTING_SAML_Custom_Default
         value: "true"
       - name: OVERWRITE_SETTING_SAML_Custom_Default_provider
-        value: "keycloak"
+        value: {{ include "civi_cloud.sso" (dict "key" "saml_client_name" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_entry_point
-        value: {{ include "urls.idp_saml_entrypoint" . }}
+        value: {{ include "civi_cloud.sso" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_idp_slo_redirect_url
-        value: {{ include "urls.idp_saml_entrypoint" . }}
+        value: {{ include "civi_cloud.sso" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_issuer
-        value: {{ printf "https://%s/_saml/metadata/keycloak" $host }}
+        value: {{ printf "https://%s/_saml/metadata/%s" $host (include "civi_cloud.sso" (dict "key" "saml_client_name" "context" $) | quote) }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_cert
-        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "realm.crt" | b64dec | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "idp_crt" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_public_cert
-        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "saml-client.crt" | b64dec | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "saml_client_crt" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_private_key
-        value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "saml-client.key" | b64dec | quote }}
+        value: {{ include "civi_cloud.sso" (dict "key" "saml_client_key" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_button_label_text
         value: "SAML Login"

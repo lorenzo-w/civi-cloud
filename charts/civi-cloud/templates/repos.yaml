@@ -22,42 +22,6 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: jkroepke
-  namespace: flux-system
-spec:
-  interval: 10m
-  url: https://jkroepke.github.io/helm-charts/
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: helm-openldap
-  namespace: flux-system
-spec:
-  interval: 10m
-  url: https://jp-gouin.github.io/helm-openldap/
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: oauth2-proxy
-  namespace: flux-system
-spec:
-  interval: 10m
-  url: https://oauth2-proxy.github.io/manifests
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: dex
-  namespace: flux-system
-spec:
-  interval: 10m
-  url: https://charts.dexidp.io
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
   name: k8s-at-home
   namespace: flux-system
 spec:

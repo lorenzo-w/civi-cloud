@@ -18,21 +18,18 @@ spec:
         name: civi-cloud
         namespace: flux-system
   timeout: 10m0s # Timed out once before dolibarr was ready. Increase timeout to be sure.
-  dependsOn:
-    - name: openldap
-      namespace: civi-sso
   values:
     dolibarr:
       adminPassword: {{ .Values.admin.password | quote }}
     ldap:
       enabled: true
       host: openldap.civi-sso.svc.cluster.local
-      usersDn: {{ include "dn.users" . | quote }}
-      groupsDn: {{ include "dn.groups" . | quote }}
+      usersDn: {{ include "civi_cloud.sso" (dict "key" "ldap_users_dn" "context" $) }}
+      groupsDn: {{ include "civi_cloud.sso" (dict "key" "ldap_groups_dn" "context" $) }}
       loginAttribute: uid
       admin: 
-        login: {{ include "names.ldap_admin_dn" . }}
-        password: {{ include "secrets.ldap_admin_pw" . }}
+        login: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_dn" "context" $) }}
+        password: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_pw" "context" $) }}
     smtp: {{ .Values.smtp | toYaml | nindent 6 }}
     domain: {{ .Values.domain }}
     org: {{ .Values.org | toYaml | nindent 6 }}

@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "onlyoffice.fullname" . }}
+  name: {{ include "common.names.fullname" . }}
   labels:
-    {{- include "onlyoffice.labels" . | nindent 4 }}
+    {{- include "common.labels.standard" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "onlyoffice.selectorLabels" . | nindent 6 }}
+      {{- include "common.labels.matchLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "onlyoffice.selectorLabels" . | nindent 8 }}
+        {{- include "common.labels.matchLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -27,19 +27,12 @@ spec:
       serviceAccountName: {{ include "onlyoffice.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      volumes:
-      - name: documents
-        persistentVolumeClaim:
-          claimName: {{ include "onlyoffice.pvcName" . }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-          - mountPath: /var/www/documents
-            name: documents
           env:
             # See: https://github.com/ONLYOFFICE/Docker-DocumentServer#available-configuration-parameters
             - name: DB_TYPE

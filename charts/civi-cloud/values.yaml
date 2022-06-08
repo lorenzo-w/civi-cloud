@@ -1,20 +1,13 @@
-secretSeed: "" # Please supply a generated secret unique to this cluster (and save it externally for backup)
-admin:
-  idp:
-    # See https://dexidp.io/docs/connectors/
-    type: "github"
-    clientID: ""
-    clientSecret: ""
-    issuerURL: ""
-  group: "" # A label identifying the group provided by your IDP, which is to be granted admin privileges (org:team for GitHub)
-  email: "" # Admin email address (for email notifications)
-  password: "" # Password for initial admin account
-
 domain: "" # The public root domain of this cluster (e.g. "example.org")
+
 org:
   name: "" # The full name of your organization
   defaultLocale: "en_US"
   logoURL: ""
+
+ssoConfig:
+  secretName: "" # Name of the secret containing all SSO config values
+  namespace: "" # Namespace of the secret
 
 smtp:
   host: ""
@@ -26,10 +19,6 @@ smtp:
 
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)
-  keycloak: "id"
-  dex: "oidc"
-  oauth2_proxy: "auth"
-  phpldapadmin: "ldap"
   homer: "home"
   dolibarr: "orga"
   nextcloud: "cloud"

@@ -45,9 +45,6 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: flux-system
-  dependsOn:
-    - name: keycloak-config
-      namespace: civi-sso
   values:
     {{- $host := printf "%s.%s" .Values.subdomains.discourse .Values.domain -}}
     ingress:
@@ -86,7 +83,7 @@ spec:
       extraEnvVars:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
-          value: {{ include "urls.idp_saml_entrypoint" . }}
+          value: {{ include "civi_cloud.sso" (dict "key" "saml_endpoint_url" "context" $) }}
         - name: DISCOURSE_SAML_CERT_FINGERPRINT
           value: "" # TODO: Find out if needed
         - name: DISCOURSE_SAML_REQUEST_METHOD
@@ -94,7 +91,11 @@ spec:
         - name: DISCOURSE_SAML_FULL_SCREEN_LOGIN
           value: "true"
         - name: DISCOURSE_SAML_CERT
-          value: {{ (lookup "v1" "Secret" "civi-sso" "keycloak-certs").data | index "realm.crt" | b64dec | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.mariadb.auth.existingSecret }}
+                key: mariadb-password
+          value: {{ include "civi_cloud.sso" (dict "key" "idp_crt" "context" $) }}
         - name: DISCOURSE_SAML_SYNC_GROUPS
           value: "true"
         - name: DISCOURSE_SAML_GROUPS_ATTRIBUTE

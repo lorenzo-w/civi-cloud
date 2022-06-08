@@ -1,9 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ printf "%s-config" (include "dolibarr.fullname" .) }}
-  namespace: {{ .Release.Namespace | quote }}
-  labels: {{- include "dolibarr.labels" . | nindent 4 }}
+  name: {{ printf "%s-config" (include "common.names.fullname" .) }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-5"

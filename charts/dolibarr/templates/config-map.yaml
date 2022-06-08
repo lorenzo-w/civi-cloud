@@ -3,7 +3,7 @@ ADHERENT_DEFAULT_SENDINFOBYMAIL: "1"
 ADHERENT_LOGIN_NOT_REQUIRED: "1"
 ADHERENT_MAIL_FROM: {{ .Values.smtp.senderAddress }}
 ADHERENT_MAIL_REQUIRED: "1"
-CRON_KEY: {{ include "common.secrets.passwords.manage" (dict "secret" (include "dolibarr.fullname" .) "key" "doli-cron-secret" "providedValues" (list "") "context" $) }} # 0 chaine
+CRON_KEY: {{ include "common.secrets.passwords.manage" (dict "secret" (include "common.names.fullname" .) "key" "doli-cron-secret" "providedValues" (list "") "context" $) }} # 0 chaine
 LDAP_ADMIN_DN: {{ .Values.ldap.admin.login | quote }}
 LDAP_ADMIN_PASS: {{ .Values.ldap.admin.password | quote }}
 LDAP_FIELD_ADDRESS: "street"
@@ -89,8 +89,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "dolibarr.cmName" . }}
-  namespace: {{ .Release.Namespace | quote }}
-  labels: {{- include "dolibarr.labels" . | nindent 4 }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
 data:
   # TODO: Make mount point flexible, currently has to be mounted to /doli
   config.sql: | 
