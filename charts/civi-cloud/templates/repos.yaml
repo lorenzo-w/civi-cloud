@@ -2,8 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
-  name: civi-cloud
-  namespace: flux-system
+  name: self
 spec:
   interval: 5m0s
   url: {{ .Values.repo.url }}
@@ -14,7 +13,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
   name: domain-sso
-  namespace: flux-system
 spec:
   interval: 5m0s
   url: https://github.com/lorenzo-w/domain-sso
@@ -25,7 +23,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: bitnami
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://charts.bitnami.com/bitnami
@@ -34,7 +31,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: k8s-at-home
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://k8s-at-home.com/charts/
@@ -43,7 +39,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: nextcloud
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://nextcloud.github.io/helm/
@@ -52,7 +47,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: rocketchat-server
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://rocketchat.github.io/helm-charts
@@ -61,7 +55,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: jitsi
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://jitsi-contrib.github.io/jitsi-helm/
@@ -70,7 +63,6 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: open-8gears
-  namespace: flux-system
 spec:
   interval: 10m
   url: https://8gears.container-registry.com/chartrepo/library/
