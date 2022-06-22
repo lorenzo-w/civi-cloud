@@ -1,3 +1,5 @@
+{{- $host := printf "%s.%s" .Values.-}}
+
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -5,7 +7,7 @@ metadata:
 data:
   setup.sh: |
     #!/bin/bash
-    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}" http://localhost:8080/status.php); do
+    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hostname }}" http://localhost:8080/status.php); do
       echo 'waiting for nextcloud to start...'
       sleep 5
     done
