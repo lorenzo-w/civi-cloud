@@ -1,6 +1,5 @@
 {{/*
 Returns a value from the SSO secret given a key
-
 Usage:
 {{ include "get_sso_config" (dict "key" "key-name" "context" $) }}
 

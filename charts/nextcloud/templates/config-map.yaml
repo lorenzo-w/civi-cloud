@@ -1,0 +1,118 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nextcloud-autoconfig
+data:
+  setup.sh: |
+    #!/bin/bash
+    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}" http://localhost:8080/status.php); do
+      echo 'waiting for nextcloud to start...'
+      sleep 5
+    done
+    echo 'nextcloud is up.'
+    echo 'installing apps...'
+    for APP in $(cat apps.txt); do
+      echo "installing $APP"
+      sudo -u www-data php occ app:install $APP
+    done
+    echo 'installing apps... done'
+    echo 'loading config.json...'
+    sudo -u www-data php occ config:import config.json
+    echo 'loading config.json... done'
+    echo 'nextcloud all set up.'
+  apps.txt: | 
+    accessibility
+    activity
+    appointments
+    apporder
+    approval
+    bookmarks
+    breezedark
+    calendar
+    circles
+    collectives
+    comments
+    contacts
+    drawio
+    duplicatefinder
+    electronicsignatures
+    encryption
+    end_to_end_encryption
+    extract
+    federation
+    files_accesscontrol
+    files_automatedtagging
+    files_external
+    files_fulltextsearch
+    files_linkeditor
+    files_lock
+    files_pdfviewer
+    files_rightclick
+    files_sharing
+    files_trackdownloads
+    files_trashbin
+    files_versions
+    files_videoplayer
+    forms
+    fulltextsearch
+    fulltextsearch_elasticsearch
+    groupfolders
+    impersonate
+    logreader
+    mail
+    metadata
+    notifications
+    occweb
+    oidc_login
+    onlyoffice
+    passwords
+    photos
+    polls
+    privacy
+    recognize
+    recommendations
+    rocketchat_nextcloud
+    sharebymail
+    shifts
+    systemtags
+    tasks
+    text
+    theming
+    twofactor_totp
+    unsplash
+    user_ldap
+    user_status
+    webhooks
+  config.json: |
+    {
+      "apps": {
+        "user_ldap": {
+          "ldap_base": {{ include "get_sso_config" (dict "key" "ldap_base_dn" "context" $) | quote }},
+          "ldap_base_groups": {{ include "get_sso_config" (dict "key" "ldap_groups_dn" "context" $) | quote }},
+          "ldap_base_users": {{ include "get_sso_config" (dict "key" "ldap_users_dn" "context" $) | quote }},
+          "ldap_cache_ttl": "600",
+          "ldap_configuration_active": "1",
+          "ldap_display_name": "displayname",
+          "ldap_email_attr": "mail",
+          "ldap_expert_username_attr": "uid",
+          "ldap_group_display_name": "cn",
+          "ldap_group_filter": {{ printf "(&(objectclass=%s))" (include "get_sso_config" (dict "key" "ldap_groups_class" "context" $)) | quote }},
+          "ldap_group_filter_mode": "0",
+          "ldap_groupfilter_objectclass": {{ include "get_sso_config" (dict "key" "ldap_groups_class" "context" $) | quote }},
+          "ldap_group_member_assoc_attribute": "member",
+          "ldap_host": {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) | quote }},
+          "ldap_login_filter": "(&(|(objectclass=inetOrgPerson))(uid=%uid))",
+          "ldap_login_filter_mode": "0",
+          "ldap_port": {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) | quote }},
+          "ldap_quota_attr": "userquota",
+          "ldap_tls": "0",
+          "ldap_user_display_name": "cn",
+          "ldap_user_filter_mode": "0",
+          "ldap_userfilter_objectclass": {{ include "get_sso_config" (dict "key" "ldap_users_class" "context" $) | quote }},
+          "ldap_userlist_filter": {{ printf "objectclass=%s" (include "get_sso_config" (dict "key" "ldap_users_class" "context" $)) | quote }}
+        },
+        "onlyoffice": {
+          "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local"
+        },
+      }
+    }

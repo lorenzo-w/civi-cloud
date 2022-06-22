@@ -1,13 +1,13 @@
+ssoConfig:
+  secretName: "" # Name of the secret containing all SSO config values
+  namespace: "" # Namespace of the secret
+
 domain: "" # The public root domain of this cluster (e.g. "example.org")
 
 org:
   name: "" # The full name of your organization
   defaultLocale: "en_US"
   logoURL: ""
-
-ssoConfig:
-  secretName: "" # Name of the secret containing all SSO config values
-  namespace: "" # Namespace of the secret
 
 smtp:
   host: ""

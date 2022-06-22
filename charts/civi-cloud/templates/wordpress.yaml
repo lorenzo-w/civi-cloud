@@ -1,13 +1,7 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: wordpress
----
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: wordpress-autoconfig
-  namespace: wordpress
 data:
   setup.sh: |
     #!/bin/bash
@@ -53,18 +47,24 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: wordpress-db
-  namespace: wordpress
 type: Opaque
 data:
-  mariadb-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "wordpress-db" "key" "mariadb-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
-  mariadb-root-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "wordpress-db" "key" "mariadb-root-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
-  mariadb-replication-password: {{ include "civi_cloud.secrets.retrieve" (dict "secret" "wordpress-db" "key" "mariadb-replication-password" "providedValues" (list "") "namespace" "wordpress" "context" $) }}
+  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-password" "providedValues" (list "") "context" $) }}
+  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
+  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress
+type: Opaque
+data:
+  admin-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress" "key" "admin-password" "providedValues" (list "") "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: wordpress
-  namespace: wordpress
 spec:
   interval: 5m
   chart:
@@ -77,8 +77,12 @@ spec:
         namespace: flux-system
   timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
-    - name: keycloak-config
-      namespace: civi-sso
+    - name: sso-clients
+  valuesFrom:
+    - kind: Secret
+      name: wordpress
+      valuesKey: admin-password
+      targetPath: "wordpressPassword"
   values:
     ingress:
       enabled: true
@@ -87,8 +91,7 @@ spec:
       annotations:
         cert-manager.io/cluster-issuer: acme
     wordpressUsername: admin
-    wordpressPassword: {{ .Values.admin.password | quote }}
-    wordpressEmail: {{ .Values.admin.email | quote }}
+    wordpressEmail: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
     wordpressBlogName: {{ .Values.org.name | quote }}
     wordpressScheme: https
     wordpressExtraConfigContent: | 

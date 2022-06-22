@@ -1,13 +1,15 @@
-kind: Namespace
 apiVersion: v1
+kind: Secret
 metadata:
   name: discourse
+type: Opaque
+data:
+  admin-password: {{ include "common.secrets.passwords.manage" (dict "secret" "discourse" "key" "admin-password" "providedValues" (list "") "context" $) }}
 ---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: discourse-autoconfig
-  namespace: discourse
 data:
   setup.sh: |
     #!/bin/bash
@@ -34,7 +36,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: discourse
-  namespace: discourse
 spec:
   interval: 5m
   chart:
@@ -45,8 +46,15 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: flux-system
+  dependsOn:
+    - name: sso-clients
+  valuesFrom:
+    - kind: Secret
+      name: discourse
+      valuesKey: admin-password
+      targetPath: "auth.password"
   values:
-    {{ $host := printf "%s.%s" .Values.subdomains.discourse .Values.domain -}}
+    {{ $host := include "get_hostname" (dict "service" "discourse" "context" $) -}}
     ingress:
       enabled: true
       hostname: {{ $host }}
@@ -55,8 +63,7 @@ spec:
         cert-manager.io/cluster-issuer: acme
     auth:
       username: admin
-      email: {{ .Values.admin.email | quote }}
-      password: {{ .Values.admin.password | quote }}
+      email: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
     host: {{ $host }}
     siteName: {{ .Values.org.name | quote }}
     smtp:
@@ -83,7 +90,7 @@ spec:
       extraEnvVars:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
-          value: {{ include "civi_cloud.sso" (dict "key" "saml_endpoint_url" "context" $) }}
+          value: {{ include "get_sso_config" (dict "key" "saml_endpoint_url" "context" $) }}
         - name: DISCOURSE_SAML_CERT_FINGERPRINT
           value: "" # TODO: Find out if needed
         - name: DISCOURSE_SAML_REQUEST_METHOD
@@ -91,7 +98,7 @@ spec:
         - name: DISCOURSE_SAML_FULL_SCREEN_LOGIN
           value: "true"
         - name: DISCOURSE_SAML_CERT
-          value: {{ include "civi_cloud.sso" (dict "key" "idp_crt" "context" $) }}
+          value: {{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}
         - name: DISCOURSE_SAML_SYNC_GROUPS
           value: "true"
         - name: DISCOURSE_SAML_GROUPS_ATTRIBUTE

@@ -11,6 +11,17 @@ spec:
     branch: {{ .Values.repo.branch }}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: domain-sso
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  url: https://github.com/lorenzo-w/domain-sso
+  ref:
+    branch: main
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: bitnami

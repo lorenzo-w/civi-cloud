@@ -1,13 +1,7 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: dolibarr
----
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: dolibarr
-  namespace: dolibarr
 spec:
   interval: 5m
   chart:
@@ -19,17 +13,15 @@ spec:
         namespace: flux-system
   timeout: 10m0s # Timed out once before dolibarr was ready. Increase timeout to be sure.
   values:
-    dolibarr:
-      adminPassword: {{ .Values.admin.password | quote }}
     ldap:
       enabled: true
-      host: openldap.civi-sso.svc.cluster.local
-      usersDn: {{ include "civi_cloud.sso" (dict "key" "ldap_users_dn" "context" $) }}
-      groupsDn: {{ include "civi_cloud.sso" (dict "key" "ldap_groups_dn" "context" $) }}
+      host: {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) }}
+      usersDn: {{ include "get_sso_config" (dict "key" "ldap_users_dn" "context" $) }}
+      groupsDn: {{ include "get_sso_config" (dict "key" "ldap_groups_dn" "context" $) }}
       loginAttribute: uid
       admin: 
-        login: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_dn" "context" $) }}
-        password: {{ include "civi_cloud.sso" (dict "key" "ldap_admin_pw" "context" $) }}
+        login: {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) }}
+        password: {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) }}
     smtp: {{ .Values.smtp | toYaml | nindent 6 }}
     domain: {{ .Values.domain }}
     org: {{ .Values.org | toYaml | nindent 6 }}
@@ -37,6 +29,6 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: acme
-      host: {{ printf "%s.%s" .Values.subdomains.dolibarr .Values.domain }}
+      host: {{ include "get_hostname" (dict "service" "dolibarr" "context" $) }}
       tls:
         enabled: true

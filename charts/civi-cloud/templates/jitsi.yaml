@@ -1,13 +1,7 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: jitsi
----
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: jitsi
-  namespace: jitsi
 spec:
   interval: 5m
   chart:
@@ -19,7 +13,7 @@ spec:
         name: jitsi
         namespace: flux-system
   values:
-    {{ $host := printf "%s.%s" .Values.subdomains.jitsi .Values.domain -}}
+    {{ $host := include "get_hostname" (dict "service" "jitsi" "context" $) -}}
     {{- $url := printf "https://%s" $host -}}
     publicURL: {{ $url }}
     web:

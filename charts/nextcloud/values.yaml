@@ -1,0 +1,19 @@
+ssoConfig:
+  secretName: "" # Name of the secret containing all SSO config values
+  namespace: "" # Namespace of the secret
+
+oidcClient:
+  id: ""
+  secretName: ""
+
+smtp:
+  host: ""
+  port: ""
+  senderAddress: ""
+  login: ""
+  password: ""
+  tlsMode: "ssl/tls" # Alternatives: starttls, none
+
+org:
+  name: ""
+  defaultLocale: "en_US"
