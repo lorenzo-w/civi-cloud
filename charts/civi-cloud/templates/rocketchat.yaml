@@ -54,11 +54,11 @@ spec:
       - name: OVERWRITE_SETTING_LDAP_Enable
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_Server_Type
-        value: "Other"
+        value: ""
       - name: OVERWRITE_SETTING_LDAP_Host
-        value: openldap.civi-sso.svc.cluster.local
+        value: {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) }}
       - name: OVERWRITE_SETTING_LDAP_Port
-        value: "389"
+        value: {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) }}
       - name: OVERWRITE_SETTING_LDAP_Reconnect
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_Login_Fallback
