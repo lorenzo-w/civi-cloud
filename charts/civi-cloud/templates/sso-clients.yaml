@@ -4,7 +4,7 @@ metadata:
   name: civi-oidc-client
 type: Opaque
 data:
-  secret: {{ "test" | b64enc }}
+  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "civi-oidc-client" "key" "secret" "providedValues" (list "") "context" $) | b64enc }}
 ---
 apiVersion: v1
 kind: Secret
@@ -12,8 +12,16 @@ metadata:
   name: civi-saml-client
 type: kubernetes.io/tls
 data:
-  tls.crt: {{ "test 2" | b64enc }}
-  tls.key: {{ "test 2" | b64enc }}
+  {{ $saml_cert := dict "tls.crt" "" "tls.key" "" -}}
+  {{- if not (include "common.secrets.exists" (dict "secret" "civi-saml-client" "context" $)) -}}
+  {{- $gen_cert := genSelfSignedCert .Values.domain nil nil 3650 -}}
+  {{- set $saml_cert "tls.crt" ($gen_cert.Cert | replace "\n" "" | trimPrefix "-----BEGIN CERTIFICATE-----" | trimSuffix "-----END CERTIFICATE-----" | b64enc) -}}
+  {{- set $saml_cert "tls.key" ($gen_cert.Key | replace "\n" "" | trimPrefix "-----BEGIN RSA PRIVATE KEY-----" | trimSuffix "-----END RSA PRIVATE KEY-----" | b64enc) -}}
+  {{- else -}}
+  {{- $saml_cert = (lookup "v1" "Secret" .Release.Namespace "civi-saml-client").data -}}
+  {{- end -}}
+  tls.crt: {{ index $saml_cert "tls.crt" }}
+  tls.key: {{ index $saml_cert "tls.key" }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
