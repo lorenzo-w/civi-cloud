@@ -34,7 +34,7 @@ spec:
         smtp:
           host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
-          secure: {{ if eq .Values.smtp.tlsMode "ssl/tls" -}}
+          secure: {{ if eq .Values.smtp.tlsMode "ssl" -}}
             "ssl"
             {{- else -}}
             "starttls"
@@ -109,7 +109,6 @@ spec:
       fullnameOverride: nextcloud-db
       auth:
         database: nextcloud
-        username: nextcloud
         existingSecret: nextcloud-db
       primary:
         persistence:

@@ -50,7 +50,7 @@ spec:
         - hosts:
             - {{ $host }}
           secretName: rocketchat-cert
-    extraEnv:
+    extraEnv: | 
       - name: OVERWRITE_SETTING_LDAP_Enable
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_Server_Type

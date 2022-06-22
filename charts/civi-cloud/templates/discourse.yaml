@@ -72,7 +72,7 @@ spec:
       port: {{ .Values.smtp.port | quote }}
       user: {{ .Values.smtp.login | quote }}
       password: {{ .Values.smtp.password | quote }}
-      protocol: ssl
+      protocol: {{ .Values.smtp.tlsMode }}
       auth: ""
     extraVolumes:
       - name: autoconfig

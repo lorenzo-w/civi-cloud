@@ -15,7 +15,7 @@ smtp:
   senderAddress: ""
   login: ""
   password: ""
-  tlsMode: "ssl/tls" # Alternatives: starttls, none
+  tlsMode: "ssl" # ssl or tls
 
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)

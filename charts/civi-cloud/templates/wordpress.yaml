@@ -109,7 +109,7 @@ spec:
     smtpPort: {{ .Values.smtp.port | quote }}
     smtpUser: {{ .Values.smtp.login | quote }}
     smtpPassword: {{ .Values.smtp.password | quote }}
-    smtpProtocol: {{ .Values.smtp.tlsMode | quote }}
+    smtpProtocol: {{ .Values.smtp.tlsMode }}
     service:
       type: ClusterIP
     mariadb:

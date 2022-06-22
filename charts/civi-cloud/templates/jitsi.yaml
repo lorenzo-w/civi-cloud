@@ -30,7 +30,3 @@ spec:
     jvb:
       useHostPort: true
       useNodeIP: true
-    jibri:
-      enabled: true
-      persistence:
-        enabled: true
