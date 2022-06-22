@@ -6,7 +6,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: jitsi
+      chart: jitsi-meet
       version: '1.2.2'
       sourceRef:
         kind: HelmRepository

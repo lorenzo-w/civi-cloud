@@ -16,8 +16,8 @@ spec:
     - name: sso-clients
   valuesFrom:
     - kind: Secret
-      name: nextcloud
-      valuesKey: admin-password
+      name: nextcloud-admin
+      valuesKey: password
       targetPath: "nextcloud.password"
   values:
     ingress:

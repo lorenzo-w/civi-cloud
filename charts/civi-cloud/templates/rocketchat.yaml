@@ -68,7 +68,7 @@ spec:
       - name: OVERWRITE_SETTING_LDAP_Authentication_UserDN
         value: {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_Authentication_Password
-        value: {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) | quote }}
+        value: {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_Find_User_After_Login
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_BaseDN

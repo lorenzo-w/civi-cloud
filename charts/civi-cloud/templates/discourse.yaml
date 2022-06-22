@@ -45,6 +45,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
+  timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
     - name: sso-clients
   valuesFrom:
