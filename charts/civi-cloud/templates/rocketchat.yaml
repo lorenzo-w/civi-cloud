@@ -1,3 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rocketchat-db
+type: Opaque
+data:
+  mongodb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-db" "key" "mongodb-password" "providedValues" (list "") "context" $) }}
+  mongodb-rootPassword: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-db" "key" "mongodb-rootPassword" "providedValues" (list "") "context" $) }}
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -13,6 +22,16 @@ spec:
         name: rocketchat-server
   dependsOn:
     - name: sso-clients
+  valuesFrom:
+    - kind: Secret
+      name: rocketchat-db
+      valuesKey: mongodb-password
+      targetPath: "mongodb.auth.password"
+  valuesFrom:
+    - kind: Secret
+      name: rocketchat-db
+      valuesKey: mongodb-rootPassword
+      targetPath: "mongodb.auth.rootPassword"
   values:
     {{ $host := printf "%s.%s" .Values.subdomains.rocketchat .Values.domain -}}
     host: {{ $host }}

@@ -59,7 +59,7 @@ metadata:
   name: wordpress
 type: Opaque
 data:
-  admin-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress" "key" "admin-password" "providedValues" (list "") "context" $) }}
+  wordpress-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress" "key" "wordpress-password" "providedValues" (list "") "context" $) }}
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -77,11 +77,6 @@ spec:
   timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
     - name: sso-clients
-  valuesFrom:
-    - kind: Secret
-      name: wordpress
-      valuesKey: admin-password
-      targetPath: "wordpressPassword"
   values:
     ingress:
       enabled: true
@@ -91,6 +86,7 @@ spec:
         cert-manager.io/cluster-issuer: acme
     wordpressUsername: admin
     wordpressEmail: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
+    existingSecret: wordpress
     wordpressBlogName: {{ .Values.org.name | quote }}
     wordpressScheme: https
     wordpressExtraConfigContent: | 
