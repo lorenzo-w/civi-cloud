@@ -66,9 +66,9 @@ spec:
             - name: DOLI_AUTH
               value: 
                 {{- if .Values.ldap.enabled -}}
-                  {{- "dolibarr,openid,ldap" | quote | indent 1 -}}
+                  {{- "dolibarr,ldap" | quote | indent 1 -}}
                   {{- else -}}
-                  {{- "dolibarr,openid" | quote | indent 1 -}}
+                  {{- "dolibarr" | quote | indent 1 -}}
                 {{- end }}
             - name: DOLI_PROD
               value: 

@@ -102,11 +102,10 @@ spec:
       existingSecret:
         enabled: true
         secretName: nextcloud-db
-        # usernameKey: username
+        usernameKey: mariadb-username
         passwordKey: mariadb-password
     mariadb:
       enabled: true
-      fullnameOverride: nextcloud-db
       auth:
         database: nextcloud
         existingSecret: nextcloud-db

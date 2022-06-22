@@ -83,10 +83,10 @@ spec:
         mountPath: /autoconfig
         readOnly: true
     discourse:
-      lifecycleHooks:
-        postStart:
-          exec:
-            command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+      # lifecycleHooks:
+      #   postStart:
+      #     exec:
+      #       command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
       extraEnvVars:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
