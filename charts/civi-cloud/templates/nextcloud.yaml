@@ -19,5 +19,5 @@ spec:
       id: civi-oidc
       secretName: civi-oidc-client
     smtp: {{ .Values.smtp | toYaml | nindent 6 }}
-    domain: {{ .Values.domain }}
     org: {{ .Values.org | toYaml | nindent 6 }}
+    hostname: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}

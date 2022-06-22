@@ -17,3 +17,5 @@ smtp:
 org:
   name: ""
   defaultLocale: "en_US"
+
+hostname: ""

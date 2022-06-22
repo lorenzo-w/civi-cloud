@@ -26,12 +26,12 @@ spec:
       annotations:
         cert-manager.io/cluster-issuer: acme
     nextcloud:
-      host: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}
+      host: {{ .Values.hostname }}
       username: admin
       mail:
         enabled: true
         fromAddress: {{ .Values.smtp.senderAddress }}
-        domain: {{ .Values.domain }}
+        # domain: "?"
         smtp:
           host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
