@@ -4,7 +4,7 @@ metadata:
   name: civi-oidc-client
 type: Opaque
 data:
-  secret: {{ include "common.secrets.passwords.manage" (dict "secret" "civi-oidc-client" "key" "secret" "providedValues" (list "") "context" $) | b64enc }}
+  secret: {{ "test" | b64enc }}
 ---
 apiVersion: v1
 kind: Secret
