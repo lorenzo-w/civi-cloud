@@ -27,7 +27,6 @@ spec:
       name: rocketchat-db
       valuesKey: mongodb-password
       targetPath: "mongodb.auth.password"
-  valuesFrom:
     - kind: Secret
       name: rocketchat-db
       valuesKey: mongodb-rootPassword
