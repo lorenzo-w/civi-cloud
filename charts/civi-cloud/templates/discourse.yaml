@@ -46,7 +46,7 @@ spec:
         name: bitnami
         namespace: flux-system
   values:
-    {{- $host := printf "%s.%s" .Values.subdomains.discourse .Values.domain -}}
+    {{ $host := printf "%s.%s" .Values.subdomains.discourse .Values.domain -}}
     ingress:
       enabled: true
       hostname: {{ $host }}
@@ -91,10 +91,6 @@ spec:
         - name: DISCOURSE_SAML_FULL_SCREEN_LOGIN
           value: "true"
         - name: DISCOURSE_SAML_CERT
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.mariadb.auth.existingSecret }}
-                key: mariadb-password
           value: {{ include "civi_cloud.sso" (dict "key" "idp_crt" "context" $) }}
         - name: DISCOURSE_SAML_SYNC_GROUPS
           value: "true"

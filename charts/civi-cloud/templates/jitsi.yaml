@@ -19,7 +19,7 @@ spec:
         name: jitsi
         namespace: flux-system
   values:
-    {{- $host := printf "%s.%s" .Values.subdomains.jitsi .Values.domain -}}
+    {{ $host := printf "%s.%s" .Values.subdomains.jitsi .Values.domain -}}
     {{- $url := printf "https://%s" $host -}}
     publicURL: {{ $url }}
     web:

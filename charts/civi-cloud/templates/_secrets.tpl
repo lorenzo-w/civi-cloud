@@ -2,7 +2,7 @@
 Generate secret password or retrieve one if already created.
 
 Usage:
-{{ include "common.secrets.passwords.manage" (dict "secret" "secret-name" "key" "keyName" "providedValues" (list "path.to.password1" "path.to.password2") "namespace" "my-namespace" "length" 10 "strong" false "chartName" "chartName" "context" $) }}
+{{ include "civi_cloud.secrets.retrieve" (dict "secret" "secret-name" "key" "keyName" "providedValues" (list "path.to.password1" "path.to.password2") "namespace" "my-namespace" "length" 10 "strong" false "chartName" "chartName" "context" $) }}
 
 Params:
   - secret - String - Required - Name of the 'Secret' resource where the password is stored.
@@ -92,7 +92,7 @@ Params:
   - context - Context - Required - Parent context.
 */}}
 {{- define "civi_cloud.sso" -}}
-{{- $secret := (lookup "v1" "Secret" .Values.ssoConfig.namespace .Values.ssoConfig.secretName) }}
+{{- $secret := (lookup "v1" "Secret" .context.Values.ssoConfig.namespace .context.Values.ssoConfig.secretName) }}
 {{- if $secret }}
   {{- $secret.data | index .key | b64dec -}}
 {{- end -}}

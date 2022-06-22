@@ -173,7 +173,7 @@ spec:
         smtp:
           host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
-          secure: {{ if .Values.smtp.tlsMode eq "ssl/tls" -}}
+          secure: {{ if eq .Values.smtp.tlsMode "ssl/tls" -}}
             "ssl"
             {{- else -}}
             "starttls"

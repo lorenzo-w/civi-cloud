@@ -21,7 +21,7 @@ spec:
   values:
     ingress:
       main:
-        {{- $host := printf "%s.%s" .Values.subdomains.homer .Values.domain -}}
+        {{ $host := printf "%s.%s" .Values.subdomains.homer .Values.domain -}}
         {{- $url := printf "https://%s" $host -}}
         enabled: true
         annotations:

@@ -24,7 +24,7 @@ spec:
     - name: keycloak-config
       namespace: civi-sso
   values:
-    {{- $host := printf "%s.%s" .Values.subdomains.rocketchat .Values.domain -}}
+    {{ $host := printf "%s.%s" .Values.subdomains.rocketchat .Values.domain -}}
     host: {{ $host }}
     smtp:
       enabled: true
