@@ -15,8 +15,8 @@ data:
   {{ $saml_cert := dict "tls.crt" "" "tls.key" "" -}}
   {{- if not (include "common.secrets.exists" (dict "secret" "civi-saml-client" "context" $)) -}}
   {{- $gen_cert := genSelfSignedCert .Values.domain nil nil 3650 -}}
-  {{- set $saml_cert "tls.crt" ($gen_cert.Cert | replace "\n" "" | trimPrefix "-----BEGIN CERTIFICATE-----" | trimSuffix "-----END CERTIFICATE-----" | b64enc) -}}
-  {{- set $saml_cert "tls.key" ($gen_cert.Key | replace "\n" "" | trimPrefix "-----BEGIN RSA PRIVATE KEY-----" | trimSuffix "-----END RSA PRIVATE KEY-----" | b64enc) -}}
+  {{- $_ := set $saml_cert "tls.crt" ($gen_cert.Cert | replace "\n" "" | trimPrefix "-----BEGIN CERTIFICATE-----" | trimSuffix "-----END CERTIFICATE-----" | b64enc) -}}
+  {{- $_ := set $saml_cert "tls.key" ($gen_cert.Key | replace "\n" "" | trimPrefix "-----BEGIN RSA PRIVATE KEY-----" | trimSuffix "-----END RSA PRIVATE KEY-----" | b64enc) -}}
   {{- else -}}
   {{- $saml_cert = (lookup "v1" "Secret" .Release.Namespace "civi-saml-client").data -}}
   {{- end -}}
