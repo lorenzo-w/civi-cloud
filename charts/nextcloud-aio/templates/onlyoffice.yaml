@@ -9,7 +9,6 @@ spec:
       chart: ./charts/onlyoffice
       sourceRef:
         kind: GitRepository
-        name: civi-cloud
-        namespace: flux-system
+        name: self
   dependsOn:
     - name: nextcloud

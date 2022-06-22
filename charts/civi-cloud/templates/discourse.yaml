@@ -45,7 +45,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-        namespace: flux-system
   dependsOn:
     - name: sso-clients
   valuesFrom:

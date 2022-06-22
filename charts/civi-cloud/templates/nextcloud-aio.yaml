@@ -1,16 +1,15 @@
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: nextcloud
+  name: nextcloud-aio
 spec:
   interval: 5m
   chart:
     spec:
-      chart: ./charts/nextcloud
+      chart: ./charts/nextcloud-aio
       sourceRef:
         kind: GitRepository
-        name: civi-cloud
-        namespace: flux-system
+        name: self
   values:
     ssoConfig:
       secretName: {{ .Values.ssoConfig.secretName }}

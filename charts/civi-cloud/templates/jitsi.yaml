@@ -11,7 +11,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: jitsi
-        namespace: flux-system
   values:
     {{ $host := include "get_hostname" (dict "service" "jitsi" "context" $) -}}
     {{- $url := printf "https://%s" $host -}}

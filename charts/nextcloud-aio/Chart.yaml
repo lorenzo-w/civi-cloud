@@ -1,5 +1,5 @@
 apiVersion: v2
-name: nextcloud
+name: nextcloud-aio
 description: A Helm chart for Nextcloud
 
 # A chart can be either an 'application' or a 'library' chart.

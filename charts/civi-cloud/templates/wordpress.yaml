@@ -74,7 +74,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-        namespace: flux-system
   timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
     - name: sso-clients

@@ -35,16 +35,18 @@ spec:
       sourceRef:
         kind: GitRepository
         name: domain-sso
-        namespace: flux-system
   values:
-    oidc:
-      - id: civi-oidc
-        redirectURIs:
-          - http://localhost:8000
-          - http://localhost:18000
-        secretName: civi-oidc-client
-    saml:
-      - id: civi-saml
-        redirectURIs:
-          - https://example.com/path
-        certSecretName: civi-saml-client
+    ssoProviderNamespace: {{ .Values.ssoConfig.namespace }}
+    configSecretName: {{ .Values.ssoConfig.secretName }}
+    clients:
+      oidc:
+        - id: civi-oidc
+          redirectURIs:
+            - http://localhost:8000
+            - http://localhost:18000
+          secretName: civi-oidc-client
+      saml:
+        - id: civi-saml
+          redirectURIs:
+            - https://example.com/path
+          certSecretName: civi-saml-client
