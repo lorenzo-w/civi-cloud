@@ -75,7 +75,7 @@ spec:
       - name: OVERWRITE_SETTING_SAML_Custom_Default_issuer
         value: {{ printf "https://%s/_saml/metadata/%s" $host "civi-saml" }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_cert
-        value: {{ include "get_sso_config" (dict "key" "idp_crt" "context" $) | quote }}
+        value: {{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_public_cert
         valueFrom:
           secretKeyRef:
