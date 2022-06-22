@@ -12,6 +12,8 @@ spec:
         kind: HelmRepository
         name: k8s-at-home
   values:
+    image:
+      tag: "v22.06.1"
     ingress:
       main:
         {{ $host := include "get_hostname" (dict "service" "homer" "context" $) -}}
