@@ -90,7 +90,7 @@ spec:
       extraEnvVars:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
-          value: {{ include "get_sso_config" (dict "key" "saml_endpoint_url" "context" $) }}
+          value: {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) }}
         - name: DISCOURSE_SAML_CERT_FINGERPRINT
           value: "" # TODO: Find out if needed
         - name: DISCOURSE_SAML_REQUEST_METHOD
