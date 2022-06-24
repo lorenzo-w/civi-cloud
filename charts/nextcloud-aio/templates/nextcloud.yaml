@@ -24,6 +24,10 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: acme
+      tls:
+        - secretName: nextcloud-tls
+          hosts:
+            - {{ .Values.hostname }}
     nextcloud:
       host: {{ .Values.hostname }}
       username: admin
@@ -92,10 +96,10 @@ spec:
         - name: autoconfig
           mountPath: /autoconfig
           readOnly: true
-    lifecycle:
-      postStart:
-        exec:
-          command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+    # lifecycle:
+    #   postStart:
+    #     exec:
+    #       command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
     internalDatabase:
       enabled: false
     externalDatabase:

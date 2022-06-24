@@ -100,11 +100,11 @@ spec:
       - name: autoconfig
         mountPath: /autoconfig
         readOnly: true
-    customPostInitScripts:
-      autoconfig.sh: |
-        #!/bin/bash
-        cd /autoconfig
-        bash ./setup.sh
+    # customPostInitScripts:
+    #   autoconfig.sh: |
+    #     #!/bin/bash
+    #     cd /autoconfig
+    #     bash ./setup.sh
     smtpHost: {{ .Values.smtp.host }}
     smtpPort: {{ .Values.smtp.port | quote }}
     smtpUser: {{ .Values.smtp.login | quote }}
