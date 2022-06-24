@@ -43,6 +43,7 @@ spec:
           password: {{ .Values.smtp.password }}
       configs:
         oidc.config.php: | 
+          <?php
           $CONFIG = array (
             // See here for explanation: https://github.com/pulsejet/nextcloud-oidc-login#config
             'allow_user_to_change_display_name' => false,
@@ -76,10 +77,13 @@ spec:
             'oidc_login_tls_verify' => true,
             'oidc_create_groups' => true
           );
+          ?>
         locale.config.php: | 
+          <?php
           $CONFIG = array (
             'default_locale' => {{ .Values.org.defaultLocale | quote }},
           );
+          ?>
       extraVolumes:
         - name: autoconfig
           configMap:
