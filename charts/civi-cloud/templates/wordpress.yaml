@@ -104,7 +104,7 @@ spec:
       autoconfig.sh: |
         #!/bin/bash
         cd /autoconfig
-        ./setup.sh
+        bash ./setup.sh
     smtpHost: {{ .Values.smtp.host }}
     smtpPort: {{ .Values.smtp.port | quote }}
     smtpUser: {{ .Values.smtp.login | quote }}
