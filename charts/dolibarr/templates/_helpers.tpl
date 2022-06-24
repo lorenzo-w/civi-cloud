@@ -7,7 +7,7 @@
 {{- end }}
 
 {{- define "dolibarr.pvcName" -}}
-{{- printf "%s-documents" (include "common.names.fullname" .) }}
+{{- printf "%s-www-data" (include "common.names.fullname" .) }}
 {{- end }}
 
 {{- define "dolibarr.cmName" -}}

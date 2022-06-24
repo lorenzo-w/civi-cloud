@@ -28,7 +28,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-      - name: documents
+      - name: www-data
         persistentVolumeClaim:
           claimName: {{ include "dolibarr.pvcName" . }}
       containers:
@@ -38,8 +38,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           volumeMounts:
-          - mountPath: /var/www/documents
-            name: documents
+            - mountPath: /var/www/html
+              name: www-data
+              subPath: html
+            - mountPath: /var/www/documents
+              name: www-data
+              subPath: documents
           env:
             - name: DOLI_DB_HOST
               value: {{ include "mariadb.serviceHost" . }}
