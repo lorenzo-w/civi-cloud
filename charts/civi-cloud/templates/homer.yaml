@@ -52,30 +52,30 @@ spec:
                     logo: https://upload.wikimedia.org/wikipedia/commons/6/67/Dolibarr_logo.png
                     tag: app
                     keywords: "members accounting projects tasks issues CRM mail"
-                    url: {{ include "get_hostname" (dict "service" "dolibarr" "context" $) }}
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "dolibarr" "context" $)) }}
                     target: _blank
                   - name: "Nextcloud"
                     logo: https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg
                     tag: app
                     keywords: "files documents calendar contacts tasks mail polls forms"
-                    url: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "nextcloud" "context" $)) }}
                     target: _blank
                   - name: "Wordpress"
                     logo: https://upload.wikimedia.org/wikipedia/commons/2/20/WordPress_logo.svg
                     tag: app
                     keywords: "website blog"
-                    url: {{ include "get_hostname" (dict "service" "wordpress" "context" $) }}
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "wordpress" "context" $)) }}
                     target: _blank
                   - name: "Jitsi"
                     logo: https://upload.wikimedia.org/wikipedia/commons/5/5d/Logo_Jitsi.svg
                     tag: app
                     keywords: "videochat conferencing meeting"
-                    url: {{ include "get_hostname" (dict "service" "jitsi" "context" $) }}
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "jitsi" "context" $)) }}
                     target: _blank
                   - name: "Discourse"
                     logo: https://upload.wikimedia.org/wikipedia/commons/c/cf/Discourse_logo.svg
                     tag: app
                     keywords: "forum discussion community"
-                    url: {{ include "get_hostname" (dict "service" "discourse" "context" $) }}
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "discourse" "context" $)) }}
                     target: _blank
                   
