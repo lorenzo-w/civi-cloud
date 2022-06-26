@@ -121,10 +121,17 @@ spec:
         - name: autoconfig
           mountPath: /autoconfig
           readOnly: true
-    # lifecycle:
-    #   postStart:
-    #     exec:
-    #       command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "cd /autoconfig & bash setup.sh"]
+    startupProbe:
+      # Configure startup probe to give autoinstall script some time to run,  
+      # before starting to probe the container for liveness and readiness.
+      enabled: true
+      initialDelaySeconds: 60 # Do not even perform checks for the first minute, as autoinstall surely takes longer.
+      periodSeconds: 20 # Then probe every 20 seconds.
+      failureThreshold: 30 # For a total of 10 minutes. Then fail if still not ready.
     internalDatabase:
       enabled: false
     externalDatabase:

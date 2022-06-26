@@ -13,11 +13,11 @@ data:
     echo 'installing apps...'
     for APP in $(cat apps.txt); do
       echo "installing $APP"
-      sudo -u www-data php occ app:install $APP
+      runuser --user www-data -- /var/www/html/occ app:install $APP
     done
     echo 'installing apps... done'
     echo 'loading config.json...'
-    sudo -u www-data php occ config:import config.json
+    runuser --user www-data -- /var/www/html/occ config:import config.json
     echo 'loading config.json... done'
     echo 'nextcloud all set up.'
   apps.txt: | 
