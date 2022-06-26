@@ -112,6 +112,12 @@ spec:
             'default_locale' => {{ .Values.org.defaultLocale | quote }},
           );
           ?>
+        proxy.config.php: | 
+          <?php
+          $CONFIG = array (
+            'overwriteprotocol' => 'https',
+          );
+          ?>
       extraVolumes:
         - name: autoconfig
           configMap:

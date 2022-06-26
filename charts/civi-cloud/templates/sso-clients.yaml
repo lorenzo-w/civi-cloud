@@ -42,8 +42,7 @@ spec:
       oidc:
         - id: civi-oidc
           redirectURIs:
-            - http://localhost:8000
-            - http://localhost:18000
+            - {{ printf "https://%s/apps/oidc_login/oidc" (include "get_hostname" (dict "service" "nextcloud" "context" $)) }}
           secretName: civi-oidc-client
       saml:
         - id: civi-saml
