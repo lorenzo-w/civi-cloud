@@ -112,7 +112,7 @@ data:
           "ldap_userlist_filter": {{ printf "objectclass=%s" (include "get_sso_config" (dict "key" "ldap_users_class" "context" $)) | quote }},
           "types": "authentication",
           "ldap_dn": {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) | quote }},
-          "ldap_agent_password": {{ include "get_sso_config" (dict "key" "ldap_admin_password" "context" $) | b64enc | quote }}
+          "ldap_agent_password": {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | b64enc | quote }}
         },
         "onlyoffice": {
           "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local"
