@@ -122,11 +122,6 @@ spec:
           readOnly: true
     lifecycle:
       postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
-    startupProbe:
-      # Configure startup probe to give autoinstall script some time to run,  
-      # before starting to probe the container for liveness and readiness.
-      enabled: true
-      initialDelaySeconds: 420 # Give it 7 minutes to finish.
     internalDatabase:
       enabled: false
     externalDatabase:
