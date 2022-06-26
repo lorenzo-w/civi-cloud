@@ -5,7 +5,7 @@ metadata:
 data:
   setup.sh: |
     #!/bin/bash
-    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hostname }}" http://localhost:8080/status.php); do
+    until $(curl --output /dev/null --silent --head --fail -H "Host: {{ .Values.hostname }}" http://localhost:{{ .Values.nextcloud.containerPort }}/status.php); do
       echo 'waiting for nextcloud to start...'
       sleep 5
     done
