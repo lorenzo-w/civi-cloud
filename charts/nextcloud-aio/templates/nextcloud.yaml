@@ -129,9 +129,7 @@ spec:
       # Configure startup probe to give autoinstall script some time to run,  
       # before starting to probe the container for liveness and readiness.
       enabled: true
-      initialDelaySeconds: 60 # Do not even perform checks for the first minute, as autoinstall surely takes longer.
-      periodSeconds: 20 # Then probe every 20 seconds.
-      failureThreshold: 30 # For a total of 10 minutes. Then fail if still not ready.
+      initialDelaySeconds: 420 # Give it 7 minutes to finish.
     internalDatabase:
       enabled: false
     externalDatabase:
