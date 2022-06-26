@@ -6,6 +6,10 @@ oidcClient:
   id: ""
   secretName: ""
 
+samlClients:
+  ids: {}
+  secretName: ""
+
 smtp:
   host: ""
   port: ""
@@ -18,4 +22,4 @@ org:
   name: ""
   defaultLocale: "en_US"
 
-hostname: ""
+hostnames: {}

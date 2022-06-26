@@ -1,0 +1,34 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: civi-cloud-sub
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./charts/civi-cloud/sub
+      sourceRef:
+        kind: GitRepository
+        name: self
+  dependsOn:
+    - name: sso-clients
+  values:
+    ssoConfig:
+      secretName: {{ .Values.ssoConfig.secretName }}
+      namespace: {{ .Values.ssoConfig.namespace }}
+    oidcClient:
+      id: civi-oidc
+      secretName: civi-oidc-client
+    samlClients:
+      ids:
+        rocketchat: rocketchat-saml
+        discourse: discourse-saml
+        wordpress: wordpress-saml
+      secretName: civi-saml-client
+    smtp: {{ .Values.smtp | toYaml | nindent 6 }}
+    org: {{ .Values.org | toYaml | nindent 6 }}
+    hostnames: 
+      nextcloud: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}
+      rocketchat: {{ include "get_hostname" (dict "service" "rocketchat" "context" $) }}
+      discourse: {{ include "get_hostname" (dict "service" "discourse" "context" $) }}
+      wordpress: {{ include "get_hostname" (dict "service" "wordpress" "context" $) }}

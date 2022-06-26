@@ -54,7 +54,7 @@ spec:
       valuesKey: admin-password
       targetPath: "auth.password"
   values:
-    {{ $host := include "get_hostname" (dict "service" "discourse" "context" $) -}}
+    {{ $host := .Values.hostnames.discourse -}}
     ingress:
       enabled: true
       hostname: {{ $host }}
@@ -91,14 +91,17 @@ spec:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
           value: {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) }}
-        - name: DISCOURSE_SAML_CERT_FINGERPRINT
-          value: "" # TODO: Find out if needed
+        # - name: DISCOURSE_SAML_CERT_FINGERPRINT
+        #   value: "" # TODO: Find out if needed
         - name: DISCOURSE_SAML_REQUEST_METHOD
           value: "post"
         - name: DISCOURSE_SAML_FULL_SCREEN_LOGIN
           value: "true"
         - name: DISCOURSE_SAML_CERT
-          value: {{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}
+          value: |
+            -----BEGIN CERTIFICATE-----
+            {{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}
+            -----END CERTIFICATE-----
         - name: DISCOURSE_SAML_SYNC_GROUPS
           value: "true"
         - name: DISCOURSE_SAML_GROUPS_ATTRIBUTE
@@ -113,3 +116,21 @@ spec:
           value: "true"
         - name: DISCOURSE_SAML_ADMIN_ATTRIBUTE
           value: "isAdmin"
+        - name: DISCOURSE_SAML_SP_CERTIFICATE
+          value: |
+            -----BEGIN CERTIFICATE-----
+            {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
+            -----END CERTIFICATE-----
+        - name: DISCOURSE_SAML_SP_PRIVATE_KEY
+          value: |
+            -----BEGIN PRIVATE KEY-----
+            {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
+            -----END PRIVATE KEY-----
+        - name: DISCOURSE_SAML_AUTHN_REQUESTS_SIGNED
+          value: "true"
+        - name: DISCOURSE_SAML_WANT_ASSERTIONS_SIGNED
+          value: "true"
+        - name: DISCOURSE_SAML_LOGOUT_REQUESTS_SIGNED
+          value: "true"
+        - name: DISCOURSE_SAML_LOGOUT_RESPONSES_SIGNED
+          value: "true"

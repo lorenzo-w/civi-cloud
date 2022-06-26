@@ -80,7 +80,7 @@ spec:
   values:
     ingress:
       enabled: true
-      hostname: {{ printf "%s.%s" .Values.subdomains.wordpress .Values.domain }}
+      hostname: {{ .Values.hostnames.wordpress }}
       tls: true
       annotations:
         cert-manager.io/cluster-issuer: acme

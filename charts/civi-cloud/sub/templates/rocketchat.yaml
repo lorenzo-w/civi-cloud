@@ -32,7 +32,7 @@ spec:
       valuesKey: mongodb-rootPassword
       targetPath: "mongodb.auth.rootPassword"
   values:
-    {{ $host := printf "%s.%s" .Values.subdomains.rocketchat .Values.domain -}}
+    {{ $host := .Values.hostnames.rocketchat -}}
     host: {{ $host }}
     smtp:
       enabled: true
@@ -84,24 +84,32 @@ spec:
       - name: OVERWRITE_SETTING_SAML_Custom_Default
         value: "true"
       - name: OVERWRITE_SETTING_SAML_Custom_Default_provider
-        value: civi-saml
+        value: {{ .Values.samlClients.ids.rocketchat }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_entry_point
         value: {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_idp_slo_redirect_url
         value: {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_issuer
-        value: {{ printf "https://%s/_saml/metadata/%s" $host "civi-saml" }}
+        value: {{ printf "https://%s/_saml/metadata/%s" $host "rocketchat-saml" }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_cert
         value: {{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}
       - name: OVERWRITE_SETTING_SAML_Custom_Default_public_cert
-        valueFrom:
-          secretKeyRef:
-            name: civi-saml-client
-            key: tls.crt
+        value: |
+          -----BEGIN CERTIFICATE-----
+          {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
+          -----END CERTIFICATE-----
       - name: OVERWRITE_SETTING_SAML_Custom_Default_private_key
-        valueFrom:
-          secretKeyRef:
-            name: civi-saml-client
-            key: tls.key
+        value: |
+          -----BEGIN PRIVATE KEY-----
+          {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
+          -----END PRIVATE KEY-----
       - name: OVERWRITE_SETTING_SAML_Custom_Default_button_label_text
         value: "SAML Login"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_name_overwrite
+        value: "true"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_mail_overwrite
+        value: "true"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_channels_update
+        value: "true"
+      - name: OVERWRITE_SETTING_SAML_Custom_Default_include_private_channels_update
+        value: "true"

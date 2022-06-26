@@ -45,7 +45,12 @@ spec:
             - {{ printf "https://%s/apps/oidc_login/oidc" (include "get_hostname" (dict "service" "nextcloud" "context" $)) }}
           secretName: civi-oidc-client
       saml:
-        - id: civi-saml
-          redirectURIs:
-            - https://example.com/path
+        - id: rocketchat-saml
           certSecretName: civi-saml-client
+          rootURL: {{ printf "https://%s" (include "get_hostname" (dict "service" "rocketchat" "context" $)) }}
+          assertionConsumer: 
+            method: post
+            url: /_saml/validate/civi-saml
+          logoutService:
+            method: redirect
+            url: /_saml/logout/civi-saml/

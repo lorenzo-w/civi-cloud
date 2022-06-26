@@ -58,3 +58,11 @@ metadata:
 spec:
   interval: 10m
   url: https://8gears.container-registry.com/chartrepo/library/
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: nextcloud
+spec:
+  interval: 10m
+  url: https://nextcloud.github.io/helm/
