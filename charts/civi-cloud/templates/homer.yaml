@@ -48,6 +48,11 @@ spec:
               - name: "Main Apps"
                 icon: "fas fa-code-branch"
                 items:
+                  - name: "Rocket.Chat"
+                    tag: app
+                    keywords: "chat messaging"
+                    url: {{ printf "https://%s" (include "get_hostname" (dict "service" "rocketchat" "context" $)) }}
+                    target: _blank
                   - name: "Dolibarr"
                     logo: https://upload.wikimedia.org/wikipedia/commons/6/67/Dolibarr_logo.png
                     tag: app
