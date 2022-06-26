@@ -10,6 +10,8 @@ spec:
       sourceRef:
         kind: GitRepository
         name: self
+  dependsOn:
+    - name: sso-clients
   values:
     ssoConfig:
       secretName: {{ .Values.ssoConfig.secretName }}
