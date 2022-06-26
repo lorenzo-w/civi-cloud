@@ -82,7 +82,6 @@ spec:
             'oidc_login_client_secret' => {{ (lookup "v1" "Secret" .Release.Namespace .Values.oidcClient.secretName).data.secret | quote }},
             'oidc_login_auto_redirect' => true,
             'oidc_login_end_session_redirect' => false,
-            'oidc_login_default_quota' => '1000000000',
             'oidc_login_button_text' => 'Log in with OpenID',
             'oidc_login_hide_password_form' => false,
             'oidc_login_use_id_token' => false,
@@ -122,9 +121,7 @@ spec:
           mountPath: /autoconfig
           readOnly: true
     lifecycle:
-      postStart:
-        exec:
-          command: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
+      postStartCommand: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
     startupProbe:
       # Configure startup probe to give autoinstall script some time to run,  
       # before starting to probe the container for liveness and readiness.
