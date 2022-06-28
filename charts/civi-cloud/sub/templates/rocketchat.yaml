@@ -96,12 +96,12 @@ spec:
       - name: OVERWRITE_SETTING_SAML_Custom_Default_public_cert
         value: |
           -----BEGIN CERTIFICATE-----
-          {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
+          {{ index (lookup "v1" "Secret" .Release.Namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
           -----END CERTIFICATE-----
       - name: OVERWRITE_SETTING_SAML_Custom_Default_private_key
         value: |
           -----BEGIN PRIVATE KEY-----
-          {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
+          {{ index (lookup "v1" "Secret" .Release.Namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
           -----END PRIVATE KEY-----
       - name: OVERWRITE_SETTING_SAML_Custom_Default_button_label_text
         value: "SAML Login"

@@ -119,12 +119,12 @@ spec:
         - name: DISCOURSE_SAML_SP_CERTIFICATE
           value: |
             -----BEGIN CERTIFICATE-----
-            {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
+            {{ index (lookup "v1" "Secret" .Release.Namespace .Values.samlClients.secretName ).data "tls.crt" | b64dec }}
             -----END CERTIFICATE-----
         - name: DISCOURSE_SAML_SP_PRIVATE_KEY
           value: |
             -----BEGIN PRIVATE KEY-----
-            {{ index (lookup "v1" "Secret" .Release.namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
+            {{ index (lookup "v1" "Secret" .Release.Namespace .Values.samlClients.secretName ).data "tls.key" | b64dec }}
             -----END PRIVATE KEY-----
         - name: DISCOURSE_SAML_AUTHN_REQUESTS_SIGNED
           value: "true"
