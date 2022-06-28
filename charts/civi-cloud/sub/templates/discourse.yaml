@@ -86,7 +86,7 @@ spec:
       # lifecycleHooks:
       #   postStart:
       #     exec:
-      #       command: ["/bin/sh", "-c", "cd /autoconfig & ./setup.sh"]
+      #       command: ["/bin/bash", "-c", "(cd /autoconfig; bash setup.sh)"]
       extraEnvVars:
         # See: https://github.com/discourse/discourse-saml#configuration
         - name: DISCOURSE_SAML_TARGET_URL
