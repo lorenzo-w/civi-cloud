@@ -23,23 +23,23 @@ data:
     done
     echo 'loading options... done'
     echo 'wordpress all set up.'
-  plugins.txt: | 
-    advanced-custom-fields
+  plugins.txt: |
     broken-link-checker
     contact-form-7
     doliconnect
     duplicate-page
-    gutenberg
+    faustwp
     matomo
     miniorange-saml-20-single-sign-on
     permalink-manager
     public-post-preview
     super-progressive-web-apps
+    ultimate-addons-for-gutenberg
     wordpress-seo
     wp-discourse
+    wp-graphql
     wp-phpmyadmin-extension
     wp-smushit
-    https://github.com/frontity/frontity-embedded/archive/refs/heads/master.zip
   options.txt: |
     saml_identity_name Test
 ---
@@ -49,9 +49,24 @@ metadata:
   name: wordpress-db
 type: Opaque
 data:
-  mariadb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-password" "providedValues" (list "") "context" $) }}
-  mariadb-root-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-root-password" "providedValues" (list "") "context" $) }}
-  mariadb-replication-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-replication-password" "providedValues" (list "") "context" $) }}
+  mariadb-password:
+    {
+      {
+        include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-password" "providedValues" (list "") "context" $),
+      },
+    }
+  mariadb-root-password:
+    {
+      {
+        include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-root-password" "providedValues" (list "") "context" $),
+      },
+    }
+  mariadb-replication-password:
+    {
+      {
+        include "common.secrets.passwords.manage" (dict "secret" "wordpress-db" "key" "mariadb-replication-password" "providedValues" (list "") "context" $),
+      },
+    }
 ---
 apiVersion: v1
 kind: Secret
@@ -59,7 +74,12 @@ metadata:
   name: wordpress-admin
 type: Opaque
 data:
-  wordpress-password: {{ include "common.secrets.passwords.manage" (dict "secret" "wordpress-admin" "key" "wordpress-password" "providedValues" (list "") "context" $) }}
+  wordpress-password:
+    {
+      {
+        include "common.secrets.passwords.manage" (dict "secret" "wordpress-admin" "key" "wordpress-password" "providedValues" (list "") "context" $),
+      },
+    }
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
@@ -70,7 +90,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      version: '14.3.2'
+      version: "14.3.2"
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -80,16 +100,17 @@ spec:
   values:
     ingress:
       enabled: true
-      hostname: {{ .Values.hostnames.wordpress }}
+      hostname: { { .Values.hostnames.wordpress } }
       tls: true
       annotations:
         cert-manager.io/cluster-issuer: acme
     wordpressUsername: admin
-    wordpressEmail: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
+    wordpressEmail:
+      { { include "get_sso_config" (dict "key" "admin_email" "context" $) } }
     existingSecret: wordpress-admin
-    wordpressBlogName: {{ .Values.org.name | quote }}
+    wordpressBlogName: { { .Values.org.name | quote } }
     wordpressScheme: https
-    wordpressExtraConfigContent: | 
+    wordpressExtraConfigContent: |
       define( 'WPLANG', {{ .Values.org.defaultLocale | quote }} );
     wordpressConfigureCache: true
     extraVolumes:
@@ -105,11 +126,11 @@ spec:
     #     #!/bin/bash
     #     cd /autoconfig
     #     bash ./setup.sh
-    smtpHost: {{ .Values.smtp.host }}
-    smtpPort: {{ .Values.smtp.port | quote }}
-    smtpUser: {{ .Values.smtp.login | quote }}
-    smtpPassword: {{ .Values.smtp.password | quote }}
-    smtpProtocol: {{ .Values.smtp.tlsMode }}
+    smtpHost: { { .Values.smtp.host } }
+    smtpPort: { { .Values.smtp.port | quote } }
+    smtpUser: { { .Values.smtp.login | quote } }
+    smtpPassword: { { .Values.smtp.password | quote } }
+    smtpProtocol: { { .Values.smtp.tlsMode } }
     service:
       type: ClusterIP
     mariadb:
