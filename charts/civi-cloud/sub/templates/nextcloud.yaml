@@ -169,7 +169,7 @@ spec:
       tls:
         - secretName: nextcloud-tls
           hosts:
-            - {{ .Values.hostname }}
+            - {{ .Values.hostnames.nextcloud }}
       annotations:
         cert-manager.io/cluster-issuer: acme
         nginx.ingress.kubernetes.io/proxy-body-size: 4G
