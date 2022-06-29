@@ -54,3 +54,8 @@ spec:
           logoutService:
             method: redirect
             url: /_saml/logout/civi-saml/
+        - id: {{ printf "https://%s/wp-content/plugins/miniorange-saml-20-single-sign-on/" (include "get_hostname" (dict "service" "wordpress" "context" $)) }}
+          rootURL: {{ printf "https://%s" (include "get_hostname" (dict "service" "wordpress" "context" $)) }}
+          assertionConsumer: 
+            method: post
+            url: /

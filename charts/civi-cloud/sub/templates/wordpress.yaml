@@ -41,7 +41,12 @@ data:
     wp-phpmyadmin-extension
     wp-smushit
   options.txt: |
-    saml_identity_name Test
+    saml_identity_name {{ printf "%s SSO" .Values.org.name | quote }}
+    mo_saml_identity_provider_identifier_name {{ printf "%s SSO" .Values.org.name | quote }}
+    saml_login_url {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
+    saml_issuer {{ include "get_sso_config" (dict "key" "idp_url" "context" $) | quote }}
+    saml_x509_certificate "s:997:\"a:1:{i:0;s:978:\"-----BEGIN CERTIFICATE-----{{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}-----END CERTIFICATE-----\";}\";"
+    saml_am_default_user_role contributor
 ---
 apiVersion: v1
 kind: Secret
@@ -100,11 +105,11 @@ spec:
       - name: autoconfig
         mountPath: /autoconfig
         readOnly: true
-    # customPostInitScripts:
-    #   autoconfig.sh: |
-    #     #!/bin/bash
-    #     cd /autoconfig
-    #     bash ./setup.sh
+    customPostInitScripts:
+      autoconfig.sh: |
+        #!/bin/bash
+        cd /autoconfig
+        bash ./setup.sh
     smtpHost: {{ .Values.smtp.host }}
     smtpPort: {{ .Values.smtp.port | quote }}
     smtpUser: {{ .Values.smtp.login | quote }}
