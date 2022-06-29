@@ -58,7 +58,7 @@ spec:
       - name: OVERWRITE_SETTING_LDAP_Host
         value: {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) }}
       - name: OVERWRITE_SETTING_LDAP_Port
-        value: {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) }}
+        value: {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) | quote }}
       - name: OVERWRITE_SETTING_LDAP_Reconnect
         value: "true"
       - name: OVERWRITE_SETTING_LDAP_Login_Fallback
