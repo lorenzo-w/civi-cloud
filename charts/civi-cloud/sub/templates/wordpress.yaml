@@ -93,7 +93,6 @@ spec:
     wordpressEmail: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
     existingSecret: wordpress-admin
     wordpressBlogName: {{ .Values.org.name | quote }}
-    wordpressScheme: https
     wordpressExtraConfigContent: | 
       define( 'WPLANG', {{ .Values.org.defaultLocale | quote }} );
     wordpressConfigureCache: true
