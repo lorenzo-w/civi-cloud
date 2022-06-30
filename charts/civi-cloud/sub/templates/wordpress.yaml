@@ -5,11 +5,6 @@ metadata:
 data:
   setup.sh: |
     #!/bin/bash
-    until $(curl --output /dev/null --silent --head --fail http://localhost:8080/wp-login.php); do
-      echo 'waiting for wordpress to start...'
-      sleep 5
-    done
-    echo 'wordpress is up.'
     echo 'installing plugins...'
     for PLUGIN in $(cat plugins.txt); do
       echo "installing $PLUGIN"
@@ -93,6 +88,7 @@ spec:
     wordpressEmail: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
     existingSecret: wordpress-admin
     wordpressBlogName: {{ .Values.org.name | quote }}
+    wordpressScheme: https
     wordpressExtraConfigContent: | 
       define( 'WPLANG', {{ .Values.org.defaultLocale | quote }} );
     wordpressConfigureCache: true
