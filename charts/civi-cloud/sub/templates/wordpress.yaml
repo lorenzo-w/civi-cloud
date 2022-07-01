@@ -70,7 +70,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      version: "14.3.2"
+      version: "15.0.6"
       sourceRef:
         kind: HelmRepository
         name: bitnami
