@@ -15,7 +15,7 @@ data:
       if ! [[ -d /var/www/html/custom_apps/$APP || -d /var/www/html/apps/$APP ]] ; then
         echo "installing $APP"
         runuser --user www-data -- /var/www/html/occ app:install $APP
-      elif [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "no" ]; then
+      elif ! [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "yes" ]; then
         echo "enabling $APP"
         runuser --user www-data -- /var/www/html/occ app:enable $APP
       else
@@ -125,7 +125,8 @@ data:
           "ldap_agent_password": {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | b64enc | quote }}
         },
         "onlyoffice": {
-          "DocumentServerInternalUrl": "http://onlyoffice.onlyoffice.svc.cluster.local"
+          "DocumentServerUrl": {{ printf "https://%s" .Values.hostnames.onlyoffice }},
+          "jwt_secret": {{ include "get_sso_config" (dict "key" "internal_oidc_client_secret" "context" $) | quote }}
         },
         "files": {
           "default_quota": "1 GB"

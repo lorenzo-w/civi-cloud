@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 onlyoffice:
-  jwt_secret_name: "" # name of k8s secret with key 'jwt-secret'
+  jwtSecret: ""
 
 org:
   name: ""
@@ -59,7 +59,7 @@ ingress:
   host: "localhost"
   tls:
     enabled: false
-    secretName: doli-tls
+    secretName: onlyoffice-tls
 
 resources:
   {}

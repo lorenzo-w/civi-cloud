@@ -50,6 +50,10 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.mariadb.auth.existingSecret }}
                   key: mariadb-password
+            - name: JWT_ENABLED
+              value: "true"
+            - name: JWT_SECRET
+              value: {{ .Values.onlyoffice.jwtSecret | quote }}
           ports:
             - name: http
               containerPort: 80

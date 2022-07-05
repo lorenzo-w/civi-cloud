@@ -30,5 +30,5 @@ spec:
     hostnames: 
       nextcloud: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}
       rocketchat: {{ include "get_hostname" (dict "service" "rocketchat" "context" $) }}
-      discourse: {{ include "get_hostname" (dict "service" "discourse" "context" $) }}
+      onlyoffice: {{ include "get_hostname" (dict "service" "onlyoffice" "context" $) }}
       wordpress: {{ include "get_hostname" (dict "service" "wordpress" "context" $) }}
