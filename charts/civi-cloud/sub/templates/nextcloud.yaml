@@ -12,7 +12,7 @@ data:
     echo 'nextcloud is up.'
     echo 'installing apps...'
     for APP in $(cat apps.txt); do
-      if ! [ -d /var/www/html/custom_apps/$APP ]; then
+      if ! [[ -d /var/www/html/custom_apps/$APP ] || [ -d /var/www/html/apps/$APP ]]; then
         echo "installing $APP"
         runuser --user www-data -- /var/www/html/occ app:install $APP
       elif [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "no" ]; then
@@ -93,6 +93,7 @@ data:
     webhooks
   config.json: |
     {
+      "system": {},
       "apps": {
         "user_ldap": {
           "ldap_base": {{ include "get_sso_config" (dict "key" "ldap_base_dn" "context" $) | quote }},
