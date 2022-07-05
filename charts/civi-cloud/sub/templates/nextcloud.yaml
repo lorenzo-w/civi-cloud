@@ -25,6 +25,7 @@ data:
     done
     echo 'installing apps... done'
     echo 'loading config.json...'
+    cp config.json /var/www/html
     runuser --user www-data -- /var/www/html/occ config:import config.json
     echo 'loading config.json... done'
     echo 'nextcloud all set up.'
