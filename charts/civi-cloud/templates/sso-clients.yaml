@@ -43,17 +43,9 @@ spec:
         - id: civi-oidc
           redirectURIs:
             - {{ printf "https://%s/apps/oidc_login/oidc" (include "get_hostname" (dict "service" "nextcloud" "context" $)) }}
+            - {{ printf "https://%s/_oauth/keycloak" (include "get_hostname" (dict "service" "rocketchat" "context" $)) }}
           secretName: civi-oidc-client
       saml:
-        - id: {{ printf "https://%s/_saml/metadata/rocketchat-saml" (include "get_hostname" (dict "service" "rocketchat" "context" $)) }}
-          certSecretName: civi-saml-client
-          rootURL: {{ printf "https://%s" (include "get_hostname" (dict "service" "rocketchat" "context" $)) }}
-          assertionConsumer: 
-            method: post
-            url: /_saml/validate/civi-saml
-          logoutService:
-            method: redirect
-            url: /_saml/logout/civi-saml/
         - id: {{ printf "https://%s/wp-content/plugins/miniorange-saml-20-single-sign-on/" (include "get_hostname" (dict "service" "wordpress" "context" $)) }}
           rootURL: {{ printf "https://%s" (include "get_hostname" (dict "service" "wordpress" "context" $)) }}
           assertionConsumer: 
