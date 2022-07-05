@@ -12,8 +12,16 @@ data:
     echo 'nextcloud is up.'
     echo 'installing apps...'
     for APP in $(cat apps.txt); do
-      echo "installing $APP"
-      runuser --user www-data -- /var/www/html/occ app:install $APP
+      if ! [ -d /var/www/html/custom_apps/$APP ]; then
+        echo "installing $APP"
+        runuser --user www-data -- /var/www/html/occ app:install $APP
+      elif [ "$(runuser --user www-data -- /var/www/html/occ config:app:get $APP enabled)" = "no" ]; then
+        echo "enabling $APP"
+        runuser --user www-data -- /var/www/html/occ app:enable $APP
+      else
+        echo "updating $APP"
+        runuser --user www-data -- /var/www/html/occ app:update $APP
+      fi
     done
     echo 'installing apps... done'
     echo 'loading config.json...'
