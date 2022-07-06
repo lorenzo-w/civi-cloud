@@ -60,7 +60,7 @@ spec:
           secretName: rocketchat-cert
     extraEnv: | 
       - name: ADMIN_USERNAME
-        value: admin
+        value: superadmin
       - name: ADMIN_PASS
         valueFrom:
           secretKeyRef:
@@ -106,37 +106,37 @@ spec:
       # - name: OVERWRITE_SETTING_LDAP_Username_Field
       #   value: "uid"
 
-      - name: Accounts_OAuth_Custom-Keycloak
+      - name: Accounts_OAuth_Custom_Keycloak
         value: "true"
-      - name: Accounts_OAuth_Custom-Keycloak-url
+      - name: Accounts_OAuth_Custom_Keycloak_url
         value: {{ include "get_sso_config" (dict "key" "oidc_issuer_url" "context" $) }}
-      - name: Accounts_OAuth_Custom-Keycloak-token_path
+      - name: Accounts_OAuth_Custom_Keycloak_token_path
         value: {{ include "get_sso_config" (dict "key" "oidc_token_path" "context" $) }}
-      - name: Accounts_OAuth_Custom-Keycloak-identity_path
+      - name: Accounts_OAuth_Custom_Keycloak_identity_path
         value: {{ include "get_sso_config" (dict "key" "oidc_userinfo_path" "context" $) }}
-      - name: Accounts_OAuth_Custom-Keycloak-authorize_path
+      - name: Accounts_OAuth_Custom_Keycloak_authorize_path
         value: {{ include "get_sso_config" (dict "key" "oidc_auth_path" "context" $) }}
-      - name: Accounts_OAuth_Custom-Keycloak-token_sent_via
+      - name: Accounts_OAuth_Custom_Keycloak_token_sent_via
         value: Header
-      - name: Accounts_OAuth_Custom-Keycloak-scope
+      - name: Accounts_OAuth_Custom_Keycloak_scope
         value: "openid profile groups email"
-      - name: Accounts_OAuth_Custom-Keycloak-id
+      - name: Accounts_OAuth_Custom_Keycloak_id
         value: civi-oidc
-      - name: Accounts_OAuth_Custom-Keycloak-secret
+      - name: Accounts_OAuth_Custom_Keycloak_secret
         value: {{ (lookup "v1" "Secret" .Release.Namespace .Values.oidcClient.secretName).data.secret | b64dec | quote }}
-      - name: Accounts_OAuth_Custom-Keycloak-login_style
+      - name: Accounts_OAuth_Custom_Keycloak_login_style
         value: Redirect
-      - name: Accounts_OAuth_Custom-Keycloak-button_label_text
+      - name: Accounts_OAuth_Custom_Keycloak_button_label_text
         value: {{ printf "%s Login" .Values.org.name | quote }}
-      - name: Accounts_OAuth_Custom-Keycloak-map_channels
+      - name: Accounts_OAuth_Custom_Keycloak_map_channels
         value: "true"
-      - name: Accounts_OAuth_Custom-Keycloak-merge_roles
+      - name: Accounts_OAuth_Custom_Keycloak_merge_roles
         value: "true"
-      - name: Accounts_OAuth_Custom-Keycloak-merge_users
+      - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
-      - name: Accounts_OAuth_Custom-Keycloak-roles_to_sync
+      - name: Accounts_OAuth_Custom_Keycloak_roles_to_sync
         value: {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}
-      - name: Accounts_OAuth_Custom-Keycloak-groups_channel_map
+      - name: Accounts_OAuth_Custom_Keycloak_groups_channel_map
         value: |
           {
             {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}: "admin"
