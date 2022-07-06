@@ -13,7 +13,8 @@ spec:
   dependsOn:
     - name: nextcloud
   values:
-    jwtSecret: {{ include "get_sso_config" (dict "key" "internal_oidc_client_secret" "context" $) | quote }}
+    onlyoffice:
+      jwtSecret: {{ include "get_sso_config" (dict "key" "internal_oidc_client_secret" "context" $) | quote }}
     ingress:
       enabled: true
       annotations:
