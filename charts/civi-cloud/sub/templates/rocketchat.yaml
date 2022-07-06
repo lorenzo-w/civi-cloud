@@ -7,6 +7,14 @@ data:
   mongodb-password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-db" "key" "mongodb-password" "providedValues" (list "") "context" $) }}
   mongodb-rootPassword: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-db" "key" "mongodb-rootPassword" "providedValues" (list "") "context" $) }}
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rocketchat-admin
+type: Opaque
+data:
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "rocketchat-admin" "key" "password" "providedValues" (list "") "context" $) }}
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -51,6 +59,22 @@ spec:
             - {{ $host }}
           secretName: rocketchat-cert
     extraEnv: | 
+      - name: ADMIN_USERNAME
+        value: admin
+      - name: ADMIN_PASS
+        valueFrom:
+          secretKeyRef:
+            name: rocketchat-admin
+            key: password
+      - name: ADMIN_EMAIL
+        value: {{ include "get_sso_config" (dict "key" "admin_email" "context" $) }}
+      - name: E2E_Enable
+        value: "true"
+      - name: Accounts_RegistrationForm
+        value: Disabled
+      - name: OVERWRITE_SETTING_Show_Setup_Wizard
+        value: completed
+      
       # - name: OVERWRITE_SETTING_LDAP_Enable
       #   value: "true"
       # - name: OVERWRITE_SETTING_LDAP_Server_Type
@@ -81,37 +105,38 @@ spec:
       #   value: "true"
       # - name: OVERWRITE_SETTING_LDAP_Username_Field
       #   value: "uid"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak
+
+      - name: Accounts_OAuth_Custom-Keycloak
         value: "true"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-url
+      - name: Accounts_OAuth_Custom-Keycloak-url
         value: {{ include "get_sso_config" (dict "key" "oidc_issuer_url" "context" $) }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-token_path
+      - name: Accounts_OAuth_Custom-Keycloak-token_path
         value: {{ include "get_sso_config" (dict "key" "oidc_token_path" "context" $) }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-identity_path
+      - name: Accounts_OAuth_Custom-Keycloak-identity_path
         value: {{ include "get_sso_config" (dict "key" "oidc_userinfo_path" "context" $) }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-authorize_path
+      - name: Accounts_OAuth_Custom-Keycloak-authorize_path
         value: {{ include "get_sso_config" (dict "key" "oidc_auth_path" "context" $) }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-token_sent_via
+      - name: Accounts_OAuth_Custom-Keycloak-token_sent_via
         value: Header
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-scope
+      - name: Accounts_OAuth_Custom-Keycloak-scope
         value: "openid profile groups email"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-id
+      - name: Accounts_OAuth_Custom-Keycloak-id
         value: civi-oidc
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-secret
+      - name: Accounts_OAuth_Custom-Keycloak-secret
         value: {{ (lookup "v1" "Secret" .Release.Namespace .Values.oidcClient.secretName).data.secret | b64dec | quote }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-login_style
+      - name: Accounts_OAuth_Custom-Keycloak-login_style
         value: Redirect
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-button_label_text
+      - name: Accounts_OAuth_Custom-Keycloak-button_label_text
         value: {{ printf "%s Login" .Values.org.name | quote }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-map_channels
+      - name: Accounts_OAuth_Custom-Keycloak-map_channels
         value: "true"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-merge_roles
+      - name: Accounts_OAuth_Custom-Keycloak-merge_roles
         value: "true"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-merge_users
+      - name: Accounts_OAuth_Custom-Keycloak-merge_users
         value: "true"
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-roles_to_sync
+      - name: Accounts_OAuth_Custom-Keycloak-roles_to_sync
         value: {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}
-      - name: OVERWRITE_SETTING_Accounts_OAuth_Custom-Keycloak-groups_channel_map
+      - name: Accounts_OAuth_Custom-Keycloak-groups_channel_map
         value: |
           {
             {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}: "admin"
