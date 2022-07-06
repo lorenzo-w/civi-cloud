@@ -71,10 +71,22 @@ spec:
         
       - name: E2E_Enable
         value: "true"
+      
       - name: Accounts_RegistrationForm
         value: Disabled
-      # - name: Accounts_Verify_Email_For_External_Accounts
-      #   value: "false"
+      - name: Accounts_RegistrationForm_LinkReplacementText
+        value: ""
+      - name: Accounts_TwoFactorAuthentication_Enabled
+        value: "false"
+      - name: Accounts_ShowFormLogin
+        value: "false"
+      - name: Accounts_AllowUsernameChange
+        value: "false"
+      - name: Accounts_AllowEmailChange
+        value: "false"
+      - name: Accounts_AllowPasswordChange
+        value: "false"
+      
       - name: OVERWRITE_SETTING_Show_Setup_Wizard
         value: completed
       
