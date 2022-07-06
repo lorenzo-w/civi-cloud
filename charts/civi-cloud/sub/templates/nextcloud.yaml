@@ -45,8 +45,6 @@ data:
     drawio
     duplicatefinder
     electronicsignatures
-    encryption
-    end_to_end_encryption
     extract
     federation
     files_accesscontrol
@@ -87,8 +85,6 @@ data:
     tasks
     text
     theming
-    twofactor_totp
-    unsplash
     user_ldap
     user_status
     webhooks
