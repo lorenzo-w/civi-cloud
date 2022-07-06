@@ -33,8 +33,6 @@ data:
     wordpress-seo
     wp-discourse
     wp-graphql
-    wp-phpmyadmin-extension
-    wp-smushit
   options.txt: |
     saml_identity_name {{ printf "%s Login" .Values.org.name | quote }}
     mo_saml_identity_provider_identifier_name {{ printf "%s Login" .Values.org.name | quote }}
