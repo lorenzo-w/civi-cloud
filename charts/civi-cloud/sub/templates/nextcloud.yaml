@@ -125,7 +125,7 @@ data:
           "ldap_agent_password": {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | b64enc | quote }}
         },
         "onlyoffice": {
-          "DocumentServerUrl": {{ printf "https://%s" .Values.hostnames.onlyoffice }},
+          "DocumentServerUrl": {{ printf "https://%s" .Values.hostnames.onlyoffice | quote }},
           "jwt_secret": {{ include "get_sso_config" (dict "key" "internal_oidc_client_secret" "context" $) | quote }}
         },
         "files": {
@@ -241,12 +241,12 @@ spec:
             'oidc_login_hide_password_form' => false,
             'oidc_login_use_id_token' => false,
             'oidc_login_attributes' => array (
-                'id' => 'uid',
+                'id' => 'sub',
                 'name' => 'name',
                 'mail' => 'email',
                 'quota' => 'nextcloudQuota',
                 'home' => 'homeDirectory',
-                'ldap_uid' => 'uid',
+                'ldap_uid' => 'sub',
                 'groups' => 'groups',
                 'photoURL' => 'picture',
                 'is_admin' => 'nextcloudAdmin',
