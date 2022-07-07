@@ -147,16 +147,5 @@ spec:
         value: sub
       - name: Accounts_OAuth_Custom_Keycloak_email_field
         value: email
-      - name: Accounts_OAuth_Custom_Keycloak_map_channels
-        value: "true"
-      - name: Accounts_OAuth_Custom_Keycloak_merge_roles
-        value: "true"
       - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
-      - name: Accounts_OAuth_Custom_Keycloak_roles_to_sync
-        value: {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}
-      - name: Accounts_OAuth_Custom_Keycloak_groups_channel_map
-        value: |
-          {
-            {{ include "get_sso_config" (dict "key" "admin_group" "context" $) | quote }}: "admin"
-          }
