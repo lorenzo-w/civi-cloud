@@ -231,7 +231,7 @@ spec:
             'oidc_login_provider_url' => {{ include "get_sso_config" (dict "key" "oidc_issuer_url" "context" $) | quote }},
             'oidc_login_client_id' => {{ .Values.oidcClient.id | quote }},
             'oidc_login_client_secret' => {{ (lookup "v1" "Secret" .Release.Namespace .Values.oidcClient.secretName).data.secret | b64dec | quote }},
-            'oidc_login_auto_redirect' => false,
+            'oidc_login_auto_redirect' => true,
             'oidc_login_end_session_redirect' => false,
             'oidc_login_button_text' => {{ printf "%s Login" .Values.org.name | quote }},
             'oidc_login_hide_password_form' => false,
