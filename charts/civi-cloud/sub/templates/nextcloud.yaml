@@ -245,7 +245,7 @@ spec:
                 'ldap_uid' => 'sub',
                 'groups' => 'groups',
                 'photoURL' => 'picture',
-                'is_admin' => 'nextcloudAdmin',
+                'is_admin' => 'is_admin',
             ),
             'oidc_login_use_external_storage' => false,
             'oidc_login_scope' => 'openid profile groups email',
