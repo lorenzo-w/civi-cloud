@@ -158,4 +158,4 @@ spec:
       - name: OVERWRITE_SETTING_FileUpload_S3_Region
         value: {{ .Values.s3.region }}
       - name: OVERWRITE_SETTING_FileUpload_S3_BucketURL
-        value: {{ printf "https://%s/%s".Values.s3.endpoint .Values.s3.buckets.rocketchat }}
+        value: {{ printf "https://%s/%s" .Values.s3.endpoint .Values.s3.buckets.rocketchat }}
