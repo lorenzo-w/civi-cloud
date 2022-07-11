@@ -171,7 +171,7 @@ spec:
       valuesKey: password
       targetPath: "nextcloud.password"
   values:
-    replicaCount: 2
+    replicaCount: 1
     ingress:
       enabled: true
       tls:
@@ -315,4 +315,6 @@ spec:
         persistence:
           enabled: true
     cronjob:
+      enabled: true
+    persistence:
       enabled: true
