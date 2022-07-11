@@ -12,10 +12,9 @@ data:
     done
     echo 'installing plugins... done'
     echo 'loading options...'
-    mapfile OPTIONS < options.txt
-    for OPTION in $OPTIONS; do
-      wp option update $OPTION
-    done
+    while read -r; do 
+      eval "wp option update $REPLY"
+    done < options.txt
     echo 'loading options... done'
     echo 'wordpress all set up.'
   plugins.txt: |
