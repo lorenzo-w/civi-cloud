@@ -12,8 +12,9 @@ data:
     done
     echo 'installing plugins... done'
     echo 'loading options...'
-    while read -r; do 
-      eval "wp option update $REPLY"
+    while IFS="=" read -r NAME VALUE
+    do 
+      echo "$VALUE" | wp option update $NAME
     done < options.txt
     echo 'loading options... done'
     echo 'wordpress all set up.'
@@ -33,12 +34,12 @@ data:
     wp-discourse
     wp-graphql
   options.txt: |
-    saml_identity_name {{ printf "%s Login" .Values.org.name | quote }}
-    mo_saml_identity_provider_identifier_name {{ printf "%s Login" .Values.org.name | quote }}
-    saml_login_url {{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) | quote }}
-    saml_issuer {{ include "get_sso_config" (dict "key" "idp_url" "context" $) | quote }}
-    saml_x509_certificate "s:997:\"a:1:{i:0;s:978:\"-----BEGIN CERTIFICATE-----{{ index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec }}-----END CERTIFICATE-----\";}\";"
-    saml_am_default_user_role contributor
+    saml_identity_name={{ printf "%s Login" .Values.org.name }}
+    mo_saml_identity_provider_identifier_name={{ printf "%s Login" .Values.org.name }}
+    saml_login_url={{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) }}
+    saml_issuer={{ include "get_sso_config" (dict "key" "idp_url" "context" $) }}
+    saml_x509_certificate={{ printf "-----BEGIN CERTIFICATE-----%s-----END CERTIFICATE-----" (index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec) }}
+    saml_am_default_user_role=contributor
 ---
 apiVersion: v1
 kind: Secret
