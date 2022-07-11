@@ -79,6 +79,8 @@ spec:
         value: ""
       - name: Accounts_TwoFactorAuthentication_Enabled
         value: "false"
+      - name: Accounts_ShowFormLogin
+        value: "false"
       - name: Accounts_AllowUsernameChange
         value: "false"
       - name: Accounts_AllowEmailChange
