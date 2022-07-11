@@ -26,6 +26,7 @@ spec:
         wordpress: wordpress-saml
       secretName: civi-saml-client
     smtp: {{ .Values.smtp | toYaml | nindent 6 }}
+    s3: {{ .Values.s3 | toYaml | nindent 6 }}
     org: {{ .Values.org | toYaml | nindent 6 }}
     hostnames: 
       nextcloud: {{ include "get_hostname" (dict "service" "nextcloud" "context" $) }}

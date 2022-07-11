@@ -41,6 +41,7 @@ spec:
       targetPath: "mongodb.auth.rootPassword"
   values:
     {{ $host := .Values.hostnames.rocketchat -}}
+    replicaCount: 2
     host: {{ $host }}
     smtp:
       enabled: true
@@ -48,8 +49,6 @@ spec:
       password: {{ .Values.smtp.password | quote }}
       host: {{ .Values.smtp.host }}
       port: {{ .Values.smtp.port }}
-    persistence:
-      enabled: true
     ingress:
       enabled: true
       annotations:
@@ -147,3 +146,16 @@ spec:
         value: email
       - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
+
+      - name: OVERWRITE_SETTING_FileUpload_Storage_Type
+        value: "AmazonS3"
+      - name: OVERWRITE_SETTING_FileUpload_S3_Bucket
+        value: {{ .Values.s3.buckets.rocketchat }}
+      - name: OVERWRITE_SETTING_FileUpload_S3_AWSAccessKeyId
+        value: {{ .Values.s3.access_key.id }}
+      - name: OVERWRITE_SETTING_FileUpload_S3_AWSSecretAccessKey
+        value: {{ .Values.s3.access_key.secret }}
+      - name: OVERWRITE_SETTING_FileUpload_S3_Region
+        value: {{ .Values.s3.region }}
+      - name: OVERWRITE_SETTING_FileUpload_S3_BucketURL
+        value: {{ printf "https://%s/%s".Values.s3.endpoint .Values.s3.buckets.rocketchat }}

@@ -171,6 +171,7 @@ spec:
       valuesKey: password
       targetPath: "nextcloud.password"
   values:
+    replicaCount: 2
     ingress:
       enabled: true
       tls:
@@ -269,6 +270,23 @@ spec:
             'overwriteprotocol' => 'https',
           );
           ?>
+        s3.config.php: |-
+          <?php
+          $CONFIG = array (
+            'objectstore' => array(
+              'class' => '\\OC\\Files\\ObjectStore\\S3',
+              'arguments' => array(
+                'bucket'     => {{ .Values.s3.buckets.nextcloud | quote }},
+                'hostname' => {{ .Values.s3.endpoint | quote }},
+                'autocreate' => true,
+                'key'        => {{ .Values.s3.access_key.id | quote }},
+                'secret'     => {{ .Values.s3.access_key.secret | quote }},
+                'region'     => {{ .Values.s3.region | quote }},
+                'use_ssl'    => true
+              )
+            )
+          );
+          ?>
       extraVolumes:
         - name: autoconfig
           configMap:
@@ -297,6 +315,4 @@ spec:
         persistence:
           enabled: true
     cronjob:
-      enabled: true
-    persistence:
       enabled: true
