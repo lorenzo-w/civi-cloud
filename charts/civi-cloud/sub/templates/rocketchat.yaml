@@ -58,6 +58,8 @@ spec:
             - {{ $host }}
           secretName: rocketchat-cert
     extraEnv: | 
+      - name: Site_Name
+        value: {{ printf "%s Chat" .Values.org.name }}
       - name: ADMIN_USERNAME
         value: superadmin
       - name: ADMIN_PASS
