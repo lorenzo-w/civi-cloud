@@ -10,6 +10,7 @@ spec:
       sourceRef:
         kind: GitRepository
         name: self
+  timeout: 10m0s # Increase timeout to be sure.
   dependsOn:
     - name: nextcloud
   values:
