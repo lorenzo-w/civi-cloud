@@ -58,7 +58,7 @@ spec:
             - {{ $host }}
           secretName: rocketchat-cert
     extraEnv: | 
-      - name: Site_Name
+      - name: OVERWRITE_SETTING_Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
       - name: ADMIN_USERNAME
         value: superadmin
@@ -73,54 +73,54 @@ spec:
       - name: E2E_Enable
         value: "true"
       
-      - name: Accounts_RegistrationForm
+      - name: OVERWRITE_SETTING_Accounts_RegistrationForm
         value: Disabled
       - name: Accounts_RegistrationForm_LinkReplacementText
         value: ""
-      - name: Accounts_TwoFactorAuthentication_Enabled
+      - name: OVERWRITE_SETTING_Accounts_TwoFactorAuthentication_Enabled
         value: "false"
-      - name: Accounts_ShowFormLogin
+      - name: OVERWRITE_SETTING_Accounts_ShowFormLogin
         value: "false"
-      - name: Accounts_AllowUsernameChange
+      - name: OVERWRITE_SETTING_Accounts_AllowUsernameChange
         value: "false"
-      - name: Accounts_AllowEmailChange
+      - name: OVERWRITE_SETTING_Accounts_AllowEmailChange
         value: "false"
-      - name: Accounts_AllowPasswordChange
+      - name: OVERWRITE_SETTING_Accounts_AllowPasswordChange
         value: "false"
       
       - name: OVERWRITE_SETTING_Show_Setup_Wizard
         value: completed
       
-      - name: OVERWRITE_SETTING_LDAP_Enable
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_Server_Type
-        value: ""
-      - name: OVERWRITE_SETTING_LDAP_Host
-        value: {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) }}
-      - name: OVERWRITE_SETTING_LDAP_Port
-        value: {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) | quote }}
-      - name: OVERWRITE_SETTING_LDAP_Reconnect
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_Login_Fallback
-        value: "false"
-      - name: OVERWRITE_SETTING_LDAP_Authentication
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_Authentication_UserDN
-        value: {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) | quote }}
-      - name: OVERWRITE_SETTING_LDAP_Authentication_Password
-        value: {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | quote }}
-      - name: OVERWRITE_SETTING_LDAP_Find_User_After_Login
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_BaseDN
-        value: {{ include "get_sso_config" (dict "key" "ldap_users_dn" "context" $) | quote }}
-      - name: OVERWRITE_SETTING_LDAP_User_Search_Field
-        value: "uid"
-      - name: OVERWRITE_SETTING_LDAP_Merge_Existing_Users
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_Update_Data_On_Login
-        value: "true"
-      - name: OVERWRITE_SETTING_LDAP_Username_Field
-        value: "uid"
+      # - name: OVERWRITE_SETTING_LDAP_Enable
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_Server_Type
+      #   value: ""
+      # - name: OVERWRITE_SETTING_LDAP_Host
+      #   value: {{ include "get_sso_config" (dict "key" "ldap_host" "context" $) }}
+      # - name: OVERWRITE_SETTING_LDAP_Port
+      #   value: {{ include "get_sso_config" (dict "key" "ldap_port" "context" $) | quote }}
+      # - name: OVERWRITE_SETTING_LDAP_Reconnect
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_Login_Fallback
+      #   value: "false"
+      # - name: OVERWRITE_SETTING_LDAP_Authentication
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_Authentication_UserDN
+      #   value: {{ include "get_sso_config" (dict "key" "ldap_admin_dn" "context" $) | quote }}
+      # - name: OVERWRITE_SETTING_LDAP_Authentication_Password
+      #   value: {{ include "get_sso_config" (dict "key" "ldap_admin_pw" "context" $) | quote }}
+      # - name: OVERWRITE_SETTING_LDAP_Find_User_After_Login
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_BaseDN
+      #   value: {{ include "get_sso_config" (dict "key" "ldap_users_dn" "context" $) | quote }}
+      # - name: OVERWRITE_SETTING_LDAP_User_Search_Field
+      #   value: "uid"
+      # - name: OVERWRITE_SETTING_LDAP_Merge_Existing_Users
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_Update_Data_On_Login
+      #   value: "true"
+      # - name: OVERWRITE_SETTING_LDAP_Username_Field
+      #   value: "uid"
 
       - name: Accounts_OAuth_Custom_Keycloak
         value: "true"

@@ -1,13 +1,13 @@
-ssoConfig:
-  secretName: "" # Name of the secret containing all SSO config values
-  namespace: "" # Namespace of the secret
-
 domain: "" # The public root domain of this cluster (e.g. "example.org")
 
 org:
   name: "" # The full name of your organization
   defaultLocale: "en_US"
   logoURL: ""
+
+sso:
+  secretName: "sso-config" # Name of the secret containing all SSO config values
+  namespace: "sso-system" # Namespace of the secret
 
 smtp:
   host: ""
@@ -30,22 +30,15 @@ s3:
 subdomains:
   # Under which subdomains of your supplied root domain should the various services run? (Created automatically by external-dns)
   homer: "home"
-  dolibarr: "orga"
   nextcloud: "cloud"
   onlyoffice: "office"
   rocketchat: "chat"
   jitsi: "meet"
-  wordpress: "cms"
-  frontity: "front"
-  discourse: "discuss"
-  mobilizon: "events"
-  n8n: "flows"
-  blink: "link"
-  elasticsearch: "search"
+  wordpress: "blog" # Set to "@" or "" to host wordpress frontend on the root domain
 
 settings:
-  frontity:
-    embedded: true
+  wordpress:
+    externalFrontend: false
 
 repo:
   url: "https://github.com/lorenzo-w/civi-cloud"

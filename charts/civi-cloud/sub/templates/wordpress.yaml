@@ -21,24 +21,23 @@ data:
   plugins.txt: |
     broken-link-checker
     contact-form-7
-    doliconnect
     duplicate-page
-    faustwp
     matomo
     miniorange-saml-20-single-sign-on
     permalink-manager
     public-post-preview
-    super-progressive-web-apps
     ultimate-addons-for-gutenberg
     wordpress-seo
-    wp-discourse
+    {{ if .Values.settings.wordpress.externalFrontend -}}
+    faustwp
     wp-graphql
+    {{- end }}
   options.txt: |
     saml_identity_name={{ printf "%s Login" .Values.org.name }}
     mo_saml_identity_provider_identifier_name={{ printf "%s Login" .Values.org.name }}
     saml_login_url={{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) }}
     saml_issuer={{ include "get_sso_config" (dict "key" "idp_url" "context" $) }}
-    saml_x509_certificate={{ printf "-----BEGIN CERTIFICATE-----%s-----END CERTIFICATE-----" (index (lookup "v1" "Secret" .Values.ssoConfig.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec) }}
+    saml_x509_certificate={{ printf "-----BEGIN CERTIFICATE-----%s-----END CERTIFICATE-----" (index (lookup "v1" "Secret" .Values.sso.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec) }}
     saml_am_default_user_role=contributor
 ---
 apiVersion: v1
@@ -72,7 +71,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
-  timeout: 10m0s # Increase timeout to be sure.
+  timeout: 15m0s # Increase timeout to be sure.
   dependsOn:
     - name: sso-clients
   values:

@@ -13,9 +13,9 @@ spec:
   dependsOn:
     - name: sso-clients
   values:
-    ssoConfig:
-      secretName: {{ .Values.ssoConfig.secretName }}
-      namespace: {{ .Values.ssoConfig.namespace }}
+    sso:
+      secretName: {{ .Values.sso.secretName }}
+      namespace: {{ .Values.sso.namespace }}
     oidcClient:
       id: civi-oidc
       secretName: civi-oidc-client

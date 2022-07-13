@@ -1,4 +1,4 @@
-ssoConfig:
+sso:
   secretName: "" # Name of the secret containing all SSO config values
   namespace: "" # Namespace of the secret
 

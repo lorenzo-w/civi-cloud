@@ -14,5 +14,9 @@ Usage:
   {{- if hasKey .context.Values.subdomains .service }}
     {{- $subdomain = index .context.Values.subdomains .service -}}
   {{- end -}}
-  {{ printf "%s.%s" $subdomain .context.Values.domain }}
+  {{- if or (eq $subdomain "") (eq $subdomain "@") -}}
+    {{ .context.Values.domain }}
+  {{- else -}}
+    {{ printf "%s.%s" $subdomain .context.Values.domain }}
+  {{- end -}}
 {{- end -}}

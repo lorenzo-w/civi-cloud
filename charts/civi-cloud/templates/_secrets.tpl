@@ -9,7 +9,7 @@ Params:
   - context - Context - Required - Parent context.
 */}}
 {{- define "get_sso_config" -}}
-  {{- $secret := (lookup "v1" "Secret" .context.Values.ssoConfig.namespace .context.Values.ssoConfig.secretName) }}
+  {{- $secret := (lookup "v1" "Secret" .context.Values.sso.namespace .context.Values.sso.secretName) }}
   {{- if $secret }}
     {{- if hasKey $secret.data .key }}
       {{- index $secret.data .key | b64dec -}}
@@ -17,6 +17,6 @@ Params:
       {{- printf "\nERROR: The SSO secret does not contain the key \"%s\"\n" .key | fail -}}
     {{- end -}}
   {{- else }}
-    {{- printf "\nERROR: secret \"%s\" does not exist in namespace \"%s\"\n" .context.Values.ssoConfig.secretName .context.Values.ssoConfig.namespace | fail -}}
+    {{- printf "\nERROR: secret \"%s\" does not exist in namespace \"%s\"\n" .context.Values.sso.secretName .context.Values.sso.namespace | fail -}}
   {{- end -}}
 {{- end -}}

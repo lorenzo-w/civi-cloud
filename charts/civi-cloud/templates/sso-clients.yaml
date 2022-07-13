@@ -36,8 +36,8 @@ spec:
         kind: GitRepository
         name: domain-sso
   values:
-    ssoProviderNamespace: {{ .Values.ssoConfig.namespace }}
-    configSecretName: {{ .Values.ssoConfig.secretName }}
+    ssoProviderNamespace: {{ .Values.sso.namespace }}
+    configSecretName: {{ .Values.sso.secretName }}
     clients:
       oidc:
         - id: civi-oidc
