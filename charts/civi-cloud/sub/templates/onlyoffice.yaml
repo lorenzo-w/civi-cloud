@@ -23,3 +23,8 @@ spec:
       host: {{ .Values.hostnames.onlyoffice }}
       tls:
         enabled: true
+    mariadb:
+      primary:
+        persistence:
+          enabled: true
+          size: 4Gi

@@ -57,6 +57,10 @@ spec:
         - hosts:
             - {{ $host }}
           secretName: rocketchat-cert
+    mongodb:
+      persistence:
+        enabled: true
+        size: 8Gi
     extraEnv: | 
       - name: OVERWRITE_SETTING_Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
