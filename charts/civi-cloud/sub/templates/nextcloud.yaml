@@ -312,6 +312,7 @@ spec:
           size: 8Gi
     cronjob:
       enabled: true
+      failedJobsHistoryLimit: 2
     persistence:
       enabled: true
       size: 4Gi
