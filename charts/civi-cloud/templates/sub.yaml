@@ -33,3 +33,4 @@ spec:
       rocketchat: {{ include "get_hostname" (dict "service" "rocketchat" "context" $) }}
       onlyoffice: {{ include "get_hostname" (dict "service" "onlyoffice" "context" $) }}
       wordpress: {{ include "get_hostname" (dict "service" "wordpress" "context" $) }}
+    settings: {{ .Values.settings | toYaml | nindent 6 }}

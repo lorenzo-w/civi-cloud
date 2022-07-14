@@ -33,3 +33,5 @@ org:
   defaultLocale: "en_US"
 
 hostnames: {}
+
+settings: {}
