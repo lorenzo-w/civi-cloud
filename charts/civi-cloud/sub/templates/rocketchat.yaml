@@ -77,8 +77,8 @@ spec:
       - name: E2E_Enable
         value: "true"
       
-      - name: OVERWRITE_SETTING_Accounts_RegistrationForm
-        value: Disabled
+      # - name: OVERWRITE_SETTING_Accounts_RegistrationForm
+      #   value: Disabled
       - name: Accounts_RegistrationForm_LinkReplacementText
         value: ""
       - name: OVERWRITE_SETTING_Accounts_TwoFactorAuthentication_Enabled
