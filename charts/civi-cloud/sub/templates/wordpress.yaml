@@ -33,7 +33,7 @@ data:
     wp-graphql
     {{- end }}
   options.txt: |
-    saml_identity_name={{ printf "%s Login" .Values.org.name }}
+    saml_identity_name={{ printf "%s_Login" (.Values.org.name | replace "." "" | replace "-" "_" | replace " " "_" | replace "/" "_") }}
     mo_saml_identity_provider_identifier_name={{ printf "%s Login" .Values.org.name }}
     saml_login_url={{ include "get_sso_config" (dict "key" "saml_entrypoint_url" "context" $) }}
     saml_issuer={{ include "get_sso_config" (dict "key" "idp_url" "context" $) }}
