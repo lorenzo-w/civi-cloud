@@ -144,6 +144,14 @@ type: Opaque
 data:
   password: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-admin" "key" "password" "providedValues" (list "") "context" $) }}
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nextcloud-redis
+type: Opaque
+data:
+  password: {{ include "common.secrets.passwords.manage" (dict "secret" "nextcloud-redis" "key" "password" "providedValues" (list "") "context" $) }}
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -165,6 +173,10 @@ spec:
       name: nextcloud-admin
       valuesKey: password
       targetPath: "nextcloud.password"
+    - kind: Secret
+      name: nextcloud-redis
+      valuesKey: password
+      targetPath: "redis.auth.password"
   values:
     replicaCount: 1
     ingress:
@@ -316,3 +328,7 @@ spec:
     persistence:
       enabled: true
       size: 4Gi
+    redis:
+      enabled: true
+      auth:
+        enabled: true
