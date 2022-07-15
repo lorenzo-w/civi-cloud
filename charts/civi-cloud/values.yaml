@@ -4,6 +4,7 @@ org:
   name: "" # The full name of your organization
   defaultLocale: "en_US"
   logoURL: ""
+  tagline: ""
 
 sso:
   secretName: "sso-config" # Name of the secret containing all SSO config values

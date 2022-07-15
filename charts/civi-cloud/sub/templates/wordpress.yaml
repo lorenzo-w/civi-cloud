@@ -39,6 +39,8 @@ data:
     saml_issuer={{ include "get_sso_config" (dict "key" "idp_url" "context" $) }}
     saml_x509_certificate={{ printf "-----BEGIN CERTIFICATE-----%s-----END CERTIFICATE-----" (index (lookup "v1" "Secret" .Values.sso.namespace (include "get_sso_config" (dict "key" "idp_cert_secret" "context" $))).data "tls.crt" | b64dec) }}
     saml_am_default_user_role=contributor
+    default_role=contributor
+    blogdescription={{ .Values.org.tagline }}
 ---
 apiVersion: v1
 kind: Secret
