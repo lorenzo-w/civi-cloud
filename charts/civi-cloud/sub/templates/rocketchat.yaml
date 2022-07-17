@@ -156,14 +156,15 @@ spec:
         value: "true"
 
       - name: OVERWRITE_SETTING_FileUpload_Storage_Type
-        value: "AmazonS3"
-      - name: OVERWRITE_SETTING_FileUpload_S3_Bucket
-        value: {{ .Values.s3.buckets.rocketchat }}
-      - name: OVERWRITE_SETTING_FileUpload_S3_AWSAccessKeyId
-        value: {{ .Values.s3.access_key.id }}
-      - name: OVERWRITE_SETTING_FileUpload_S3_AWSSecretAccessKey
-        value: {{ .Values.s3.access_key.secret }}
-      - name: OVERWRITE_SETTING_FileUpload_S3_Region
-        value: {{ .Values.s3.region }}
-      - name: OVERWRITE_SETTING_FileUpload_S3_BucketURL
-        value: {{ printf "https://%s/%s" .Values.s3.endpoint .Values.s3.buckets.rocketchat }}
+        value: Webdav
+      - name: OVERWRITE_SETTING_FileUpload_Webdav_Upload_Folder_Path
+        value: rocketchat-uploads
+      - name: OVERWRITE_SETTING_FileUpload_Webdav_Server_URL
+        value: {{ printf "https://%s/remote.php/dav/files/admin/" .Values.hostnames.nextcloud }}
+      - name: OVERWRITE_SETTING_FileUpload_Webdav_Username
+        value: admin
+      - name: OVERWRITE_SETTING_FileUpload_Webdav_Password
+        valueFrom:
+          secretKeyRef:
+            name: nextcloud-admin
+            key: password

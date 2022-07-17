@@ -25,6 +25,12 @@ data:
     cp config.json /var/www/html
     runuser --user www-data -- /var/www/html/occ config:import config.json
     echo 'loading config.json... done'
+    echo "creating rocketchat-uploads groupfolder..."
+    if ! runuser --user www-data -- /var/www/html/occ groupfolders:rename 1 rocketchat-uploads > /dev/null; then
+      runuser --user www-data -- /var/www/html/occ groupfolders:create rocketchat-uploads
+    fi
+    runuser --user www-data -- /var/www/html/occ groupfolders:group 1 admin write share delete
+    echo "creating rocketchat-uploads groupfolder... done"
     echo 'nextcloud all set up.'
   apps.txt: | 
     accessibility
