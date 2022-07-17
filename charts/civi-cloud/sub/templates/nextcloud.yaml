@@ -219,8 +219,8 @@ spec:
       username: admin
       mail:
         enabled: true
-        fromAddress: {{ .Values.smtp.senderAddress }}
-        # domain: "?"
+        fromAddress: {{ index (.Values.smtp.senderAddress | splitList "@") 0 }}
+        domain: {{ index (.Values.smtp.senderAddress | splitList "@") 1 }}
         smtp:
           host: {{ .Values.smtp.host }}
           port: {{ .Values.smtp.port }}
@@ -229,8 +229,8 @@ spec:
             {{- else -}}
             "starttls"
           {{- end }}
-          name: {{ .Values.smtp.login }}
-          password: {{ .Values.smtp.password }}
+          name: {{ .Values.smtp.login | quote }}
+          password: {{ .Values.smtp.password | quote }}
       configs:
         oidc.config.php: | 
           <?php
