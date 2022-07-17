@@ -47,6 +47,7 @@ spec:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: acme
+        nginx.ingress.kubernetes.io/proxy-body-size: 4G
       tls:
         - hosts:
             - {{ $host }}
