@@ -179,10 +179,6 @@ spec:
       name: nextcloud-admin
       valuesKey: password
       targetPath: "nextcloud.password"
-    - kind: Secret
-      name: nextcloud-redis
-      valuesKey: password
-      targetPath: "redis.auth.password"
   values:
     replicaCount: 1
     ingress:
@@ -338,3 +334,5 @@ spec:
       enabled: true
       auth:
         enabled: true
+        existingSecret: nextcloud-redis
+        existingSecretPasswordKey: password
