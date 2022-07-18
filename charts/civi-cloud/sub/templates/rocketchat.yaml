@@ -41,7 +41,7 @@ spec:
       targetPath: "mongodb.auth.rootPassword"
   values:
     {{ $host := .Values.hostnames.rocketchat -}}
-    replicaCount: 2
+    replicaCount: 1
     host: {{ $host }}
     ingress:
       enabled: true
@@ -55,7 +55,10 @@ spec:
     mongodb:
       persistence:
         enabled: true
-        size: 8Gi
+        size: 4Gi
+    persistence:
+      enabled: true
+      size: 4Gi
     extraEnv: | 
       - name: OVERWRITE_SETTING_Site_Name
         value: {{ printf "%s Chat" .Values.org.name }}
@@ -119,19 +122,21 @@ spec:
       - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
 
-      - name: OVERWRITE_SETTING_FileUpload_Storage_Type
-        value: Webdav
-      - name: OVERWRITE_SETTING_FileUpload_Webdav_Upload_Folder_Path
-        value: rocketchat-uploads
-      - name: OVERWRITE_SETTING_FileUpload_Webdav_Server_URL
-        value: {{ printf "https://%s/remote.php/dav/files/admin/" .Values.hostnames.nextcloud }}
-      - name: OVERWRITE_SETTING_FileUpload_Webdav_Username
-        value: admin
-      - name: OVERWRITE_SETTING_FileUpload_Webdav_Password
-        valueFrom:
-          secretKeyRef:
-            name: nextcloud-admin
-            key: password
+      - name: OVERWRITE_SETTING_FileUpload_MaxFileSize
+        value: "10485760"
+      # - name: OVERWRITE_SETTING_FileUpload_Storage_Type
+      #   value: Webdav
+      # - name: OVERWRITE_SETTING_FileUpload_Webdav_Upload_Folder_Path
+      #   value: rocketchat-uploads
+      # - name: OVERWRITE_SETTING_FileUpload_Webdav_Server_URL
+      #   value: {{ printf "https://%s/remote.php/dav/files/admin/" .Values.hostnames.nextcloud }}
+      # - name: OVERWRITE_SETTING_FileUpload_Webdav_Username
+      #   value: admin
+      # - name: OVERWRITE_SETTING_FileUpload_Webdav_Password
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: nextcloud-admin
+      #       key: password
 
       - name: OVERWRITE_SETTING_SMTP_Protocol
         value: smtps
