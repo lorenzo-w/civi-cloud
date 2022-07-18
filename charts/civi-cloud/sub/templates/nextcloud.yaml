@@ -329,7 +329,7 @@ spec:
       primary:
         persistence:
           enabled: true
-          size: 8Gi
+          size: 4Gi
     cronjob:
       enabled: true
       failedJobsHistoryLimit: 2
