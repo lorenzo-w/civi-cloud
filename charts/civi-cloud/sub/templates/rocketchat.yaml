@@ -115,10 +115,14 @@ spec:
         value: redirect
       - name: Accounts_OAuth_Custom_Keycloak_button_label_text
         value: {{ printf "%s Login" .Values.org.name | quote }}
-      - name: Accounts_OAuth_Custom-Keycloak_username_field
-        value: sub
+      - name: Accounts_OAuth_Custom_Keycloak_key_field
+        value: username
+      - name: Accounts_OAuth_Custom_Keycloak_username_field
+        value: preferred_username
       - name: Accounts_OAuth_Custom_Keycloak_email_field
         value: email
+      - name: Accounts_OAuth_Custom_Keycloak_name_field
+        value: name
       - name: Accounts_OAuth_Custom_Keycloak_merge_users
         value: "true"
 
