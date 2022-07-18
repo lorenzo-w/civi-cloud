@@ -11,8 +11,6 @@ spec:
         kind: GitRepository
         name: self
   timeout: 10m0s # Increase timeout to be sure.
-  dependsOn:
-    - name: nextcloud
   values:
     onlyoffice:
       jwtSecret: {{ include "get_sso_config" (dict "key" "internal_oidc_client_secret" "context" $) | quote }}
