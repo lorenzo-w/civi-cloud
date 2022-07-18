@@ -342,3 +342,8 @@ spec:
         enabled: true
         existingSecret: nextcloud-redis
         existingSecretPasswordKey: password
+      replica:
+        replicaCount: 0
+      master:
+        persistence:
+          size: 4Gi
