@@ -154,3 +154,6 @@ spec:
         value: {{ .Values.smtp.password | quote }}
       - name: OVERWRITE_SETTING_From_Email
         value: {{ .Values.smtp.senderAddress }}
+
+      - name: UI_Use_Real_Name
+        value: "true"
