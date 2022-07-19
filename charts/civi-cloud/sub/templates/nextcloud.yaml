@@ -333,6 +333,8 @@ spec:
     cronjob:
       enabled: true
       failedJobsHistoryLimit: 2
+      image:
+        tag: stable-apache
     persistence:
       enabled: true
       size: 4Gi
